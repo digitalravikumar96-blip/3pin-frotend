@@ -2,6 +2,47 @@
 import '../styles/contact.css'
 
 export function ContactPage() {
+  const submitContactForm = async (form) => {
+  try {
+    const payload = {
+      ...form,
+      name: String(form?.name || '').trim(),
+      email: String(form?.email || '').trim(),
+      phone: String(form?.phone || '').trim(),
+      message: String(form?.message || '').trim(),
+      date: String(form?.date || '').trim(),
+      time: String(form?.time || '').trim(),
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/api/contact`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!response.ok) {
+      let apiError = 'Failed to submit';
+      try {
+        const errJson = await response.json();
+        apiError = errJson?.error || errJson?.message || apiError;
+      } catch (_) {
+        // keep default message if body is not JSON
+      }
+      throw new Error(apiError);
+    }
+
+    return true;
+
+  } catch (err) {
+    console.error("❌ Contact submit error:", err);
+    throw err;
+  }
+};
   return (
     <div className="contact-section">
       <div className="contact-section__container">
@@ -68,9 +109,7 @@ export function ContactPage() {
           <ContactForm
             title="Send Us a Message"
             subtitle="We'll get back to you within 24 hours"
-            onSubmit={async () => {
-              await new Promise((r) => setTimeout(r, 700))
-            }}
+            onSubmit={submitContactForm}
           />
         </div>
       </div>

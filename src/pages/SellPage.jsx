@@ -21,7 +21,34 @@ export function SellPage() {
     if (!canSubmit) return
     setStatus('loading')
     try {
-      await new Promise((r) => setTimeout(r, 700)) // Simulate submission
+      const payload = {
+        name: String(form.name || '').trim(),
+        email: String(form.email || '').trim(),
+        phone: String(form.phone || '').trim(),
+        message: String(form.message || '').trim(),
+        leadType: 'sell_property',
+        sheetName: 'Sell Your Property',
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        let apiError = 'Failed to submit'
+        try {
+          const errJson = await response.json()
+          apiError = errJson?.error || errJson?.message || apiError
+        } catch (_) {
+          // keep default message
+        }
+        throw new Error(apiError)
+      }
+
       setStatus('success')
     } catch {
       setStatus('error')

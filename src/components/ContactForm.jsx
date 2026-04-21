@@ -1,5 +1,18 @@
 import { useMemo, useState } from 'react'
 
+const TIME_SLOTS = [
+  '09:00 AM',
+  '10:00 AM',
+  '11:00 AM',
+  '12:00 PM',
+  '01:00 PM',
+  '02:00 PM',
+  '03:00 PM',
+  '04:00 PM',
+  '05:00 PM',
+  '06:00 PM',
+]
+
 export function ContactForm({
   title = 'Contact agent',
   subtitle = 'We\'ll respond shortly.',
@@ -14,12 +27,10 @@ export function ContactForm({
     () =>
       Boolean(
         form.name.trim() &&
-        form.email.trim() &&
-        form.phone.trim() &&
-        form.message.trim() &&
-        (!showDateTime || (form.date && form.time))
+        form.phone.trim() 
+        // (!showDateTime || (form.date && form.time))
       ) && status !== 'loading',
-    [form, status, showDateTime]
+    [form, status]
   )
 
   async function submit(e) {
@@ -42,8 +53,9 @@ export function ContactForm({
         <input
           value={form.name}
           onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-          placeholder="Full name"
+          placeholder="Full name *"
           className="luxury-input text-sm"
+          required
         />
         <input
           value={form.email}
@@ -55,7 +67,7 @@ export function ContactForm({
         <input
           value={form.phone}
           onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
-          placeholder="Phone number"
+          placeholder="Phone number *"
           type="tel"
           className="luxury-input text-sm"
           required
@@ -63,7 +75,7 @@ export function ContactForm({
         <textarea
           value={form.message}
           onChange={(e) => setForm((s) => ({ ...s, message: e.target.value }))}
-          placeholder="Your message"
+          placeholder="Your message (optional)"
           rows={compact ? 3 : 4}
           className="luxury-input resize-none text-sm"
         />
@@ -75,12 +87,16 @@ export function ContactForm({
               onChange={(e) => setForm((s) => ({ ...s, date: e.target.value }))}
               className="luxury-input text-sm"
             />
-            <input
-              type="time"
+            <select
               value={form.time}
               onChange={(e) => setForm((s) => ({ ...s, time: e.target.value }))}
               className="luxury-input text-sm"
-            />
+            >
+              <option value="">Select time</option>
+              {TIME_SLOTS.map((slot) => (
+                <option key={slot} value={slot}>{slot}</option>
+              ))}
+            </select>
           </div>
         ) : null}
       </div>

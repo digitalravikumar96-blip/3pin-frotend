@@ -140,7 +140,6 @@ export function PropertyPage() {
         setBrochureErr('Please enter a valid 10-digit mobile number.')
         return
       }
-
       const res = await api.post(`/api/property/${id}/brochure-lead`, { name, mobile })
       const downloadUrl = res?.data?.data?.downloadUrl
       if (!downloadUrl) {
@@ -510,8 +509,18 @@ export function PropertyPage() {
               <ContactForm
                 compact
                 showDateTime
-                onSubmit={async () => {
-                  await new Promise((r) => setTimeout(r, 700))
+                onSubmit={async (form) => {
+                  const payload = {
+                    ...form,
+                    leadType: 'schedule_visit',
+                    sheetName: 'Schedule a visit',
+                    propertyId: id,
+                    propertyTitle: property?.title || '',
+                  }
+                  const response = await api.post('/api/contact', payload)
+                  if (!response?.data?.success) {
+                    throw new Error('Failed to submit schedule request')
+                  }
                 }}
               />
             </div>

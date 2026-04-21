@@ -18,11 +18,13 @@ export function WhatsAppButton({ phone, message = '', className = '', floating =
       className={[base, position, className].filter(Boolean).join(' ')}
       aria-label="Chat on WhatsApp"
     >
-      <span className="grid size-10 place-items-center rounded-full bg-white/15">
+      {/* <span className="grid size-10 place-items-center rounded-full bg-white/15">
         <ChatBubbleOvalLeftEllipsisIcon className="size-6" />
       </span>
       <span className={`text-sm font-semibold ${floating ? 'hidden pr-1 sm:inline' : 'pr-1'}`}>WhatsApp</span>
-      <span className="sr-only">Open WhatsApp chat</span>
+      <span className="sr-only">Open WhatsApp chat</span> */}
+
+      <ChatBubbleOvalLeftEllipsisIcon className="size-6" />
     </a>
   )
 }
