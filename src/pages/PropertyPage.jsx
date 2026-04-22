@@ -140,7 +140,12 @@ export function PropertyPage() {
         setBrochureErr('Please enter a valid 10-digit mobile number.')
         return
       }
-      const res = await api.post(`/api/property/${id}/brochure-lead`, { name, mobile })
+      const res = await api.post(`/api/property/${id}/brochure-lead`, {
+        name,
+        mobile,
+        propertyId: property?._id || id,
+        propertyTitle: property?.title || '',
+      })
       const downloadUrl = res?.data?.data?.downloadUrl
       if (!downloadUrl) {
         setBrochureErr('Unable to start download. Please try again.')
@@ -149,7 +154,10 @@ export function PropertyPage() {
 
       setBrochureOpen(false)
       // Trigger a real browser navigation so the file can download.
-      window.location.assign(downloadUrl)
+      // window.location.assign(downloadUrl)
+      window.location.assign(
+        `${import.meta.env.VITE_API_BASE_URL}${downloadUrl}`
+      )
     } catch (e) {
       const msg = e?.response?.data?.message || 'Unable to start download. Please try again.'
       setBrochureErr(msg)
