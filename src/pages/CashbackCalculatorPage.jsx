@@ -90,7 +90,7 @@ export function CashbackCalculatorPage() {
                   </div>
 
                   {/* Custom Slider */}
-                  <div className="relative h-2 bg-[var(--color-neutral-200)] rounded-full overflow-hidden">
+                  <div className="relative h-2 bg-[var(--color-neutral-200)] rounded-full ">
                     <div
                       className="absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-light)] rounded-full transition-all duration-150"
                       style={{ width: `${rangePercent}%` }}

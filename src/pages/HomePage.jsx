@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 import { PropertyCard } from '../components/PropertyCard'
@@ -11,7 +11,6 @@ export function HomePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isVisible, setIsVisible] = useState(false)
-  const heroRef = useRef(null)
 
   useEffect(() => {
     setLoading(true)
@@ -32,20 +31,6 @@ export function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Subtle parallax effect
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!heroRef.current) return
-      const scrolled = window.scrollY
-      const heroImage = heroRef.current.querySelector('.hero-bg-image')
-      if (heroImage) {
-        heroImage.style.transform = `translateY(${scrolled * 0.25}px) scale(1.05)`
-      }
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   const scrollToContent = () => {
     const element = document.getElementById('featured-properties')
     if (element) {
@@ -56,10 +41,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-[var(--color-secondary)]">
       {/* Hero Section - Light Luxury */}
-      <section
-        ref={heroRef}
-        className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden"
-      >
+      <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
         {/* Background Image with Light Overlay */}
         <div className="absolute inset-0 overflow-hidden">
           <img
@@ -68,11 +50,8 @@ export function HomePage() {
             className="hero-bg-image w-full h-full object-cover scale-105"
           />
 
-          {/* Light Elegant Overlay — slightly stronger mid band for text legibility on glass/water */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-secondary)]/65 via-[var(--color-secondary)]/52 to-[var(--color-secondary)]/78" />
-
-          {/* Subtle warm tint */}
-          <div className="absolute inset-0 bg-[var(--color-accent)]/5 mix-blend-overlay" />
+          {/* Subtle dark overlay for crisp text readability */}
+          <div className="absolute inset-0 bg-black/40" />
         </div>
 
         {/* Hero Content */}
@@ -89,7 +68,7 @@ export function HomePage() {
               }`}
             >
               <span className="w-12 h-px bg-[var(--color-accent)]" />
-              <span className="hero-ambient-text font-sans text-[11px] sm:text-xs uppercase tracking-[0.3em] text-[var(--color-primary)] font-medium">
+              <span className="hero-ambient-text hero-secondary-text font-sans text-[11px] sm:text-xs uppercase tracking-[0.3em] text-white font-medium">
                 Premium Real Estate
               </span>
               <span className="w-12 h-px bg-[var(--color-accent)]" />
@@ -97,17 +76,17 @@ export function HomePage() {
 
             {/* Main Headline */}
             <h1
-              className={`hero-ambient-text font-serif text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-normal text-[var(--color-primary)] leading-[1.1] mb-6 transition-all duration-1000 delay-200 ${
+              className={`hero-ambient-text font-serif text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-semibold text-white leading-[1.1] mb-6 transition-all duration-1000 delay-200 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
-              <span className="block italic">Discover</span>
-              <span className="block font-medium">Exceptional Living</span>
+              <span className="block">Discover</span>
+              <span className="block font-semibold">Exceptional Living</span>
             </h1>
 
             {/* Subheadline */}
             <p
-              className={`hero-ambient-text font-sans text-sm sm:text-base text-[var(--color-primary)] max-w-xl mx-auto mb-14 leading-relaxed transition-all duration-1000 delay-300 ${
+              className={`hero-ambient-text hero-secondary-text font-sans text-sm sm:text-base text-white max-w-xl mx-auto mb-14 leading-relaxed transition-all duration-1000 delay-300 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
@@ -136,7 +115,7 @@ export function HomePage() {
               </div>
 
               {/* Popular Locations — frosted chip so links stay readable over pool/reflections */}
-              <div className="mt-6 flex justify-center px-2">
+              {/* <div className="mt-6 flex justify-center px-2">
                 <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-full border border-white/70 bg-white/88 px-4 py-2.5 shadow-lg shadow-[var(--color-primary)]/10 backdrop-blur-sm">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-[var(--color-primary)]/80">
                     Popular
@@ -152,7 +131,7 @@ export function HomePage() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -161,11 +140,11 @@ export function HomePage() {
         <button
           type="button"
           onClick={scrollToContent}
-          className="hero-ambient-text absolute bottom-10 left-1/2 z-10 -translate-x-1/2 group flex flex-col items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors duration-300 cursor-pointer"
+          className="hero-ambient-text hero-secondary-text absolute bottom-10 left-1/2 z-10 -translate-x-1/2 group flex flex-col items-center gap-2 text-white hover:text-white transition-colors duration-300 cursor-pointer"
         >
           <span className="text-[10px] uppercase tracking-[0.2em] font-semibold">Scroll</span>
-          <div className="relative w-6 h-10 border-2 border-[var(--color-primary)]/45 rounded-full flex items-start justify-center p-1 shadow-[0_0_12px_rgba(255,252,248,0.9)] group-hover:border-[var(--color-accent)] transition-colors">
-            <div className="w-1 h-2 bg-[var(--color-primary)]/70 rounded-full animate-bounce mt-1 group-hover:bg-[var(--color-accent)]" />
+          <div className="relative w-6 h-10 border-2 border-white/70 rounded-full flex items-start justify-center p-1 group-hover:border-white transition-colors">
+            <div className="w-1 h-2 bg-white/80 rounded-full animate-bounce mt-1 group-hover:bg-white" />
           </div>
         </button>
 
@@ -285,7 +264,7 @@ export function HomePage() {
                 <img
                   src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80"
                   alt="Luxury Interior"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  className="block w-full h-full object-cover"
                 />
               </div>
 
@@ -342,12 +321,11 @@ export function HomePage() {
 
       {/* Add animation keyframes */}
       <style>{`
-        /* Soft light halo so dark hero copy stays readable on glass, water, and sky */
         .hero-ambient-text {
-          text-shadow:
-            0 0 28px rgba(255, 252, 248, 0.95),
-            0 0 12px rgba(255, 252, 248, 0.85),
-            0 1px 2px rgba(255, 255, 255, 1);
+          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .hero-secondary-text {
+          opacity: 0.9;
         }
         @keyframes fade-in {
           from {

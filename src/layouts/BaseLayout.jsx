@@ -2,6 +2,7 @@ import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { WhatsAppButton } from '../components/WhatsAppButton'
+import Logo from '../assets/Logo.PNG'
 
 const navItems = [
   { label: 'Home', to: '/' },
@@ -61,9 +62,11 @@ export function BaseLayout() {
               <div className="flex items-center justify-between h-20">
                 {/* Logo */}
                 <NavLink to="/" className="header-logo flex items-center gap-4">
-                  <div className="w-11 h-11 bg-[var(--color-accent)] flex items-center justify-center rounded-sm">
-                    <span className="font-serif text-white text-base font-semibold tracking-wide">3P</span>
-                  </div>
+                  <img
+                    src={Logo}
+                    alt="Three Pin logo"
+                    className="w-11 h-11 rounded-sm object-contain"
+                  />
                   <div className="hidden sm:block">
                     <div className="font-serif text-lg font-medium text-[var(--color-primary)] leading-tight">
                       Three Pin
@@ -134,9 +137,11 @@ export function BaseLayout() {
             {/* Brand Column */}
             <div className="md:col-span-5">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-[var(--color-accent)] flex items-center justify-center rounded-sm">
-                  <span className="font-serif text-white text-lg font-semibold tracking-wide">3P</span>
-                </div>
+                <img
+                  src={Logo}
+                  alt="Three Pin logo"
+                  className="w-11 h-11 rounded-sm object-contain"
+                />
                 <div>
                   <div className="font-serif text-xl font-medium text-[var(--color-primary)]">Three Pin</div>
                   <div className="font-sans text-[11px] uppercase tracking-[0.2em] text-[var(--color-neutral-500)]">

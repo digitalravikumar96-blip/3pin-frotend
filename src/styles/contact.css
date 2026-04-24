@@ -1,7 +1,7 @@
 /* ============================================
-   CONTACT SECTION - LIGHT LUXURY DESIGN
-   Scoped under .contact-section
-   ============================================ */
+  CONTACT SECTION - CLEAN CORPORATE STYLE
+  Scoped under .contact-section
+  ============================================ */
 
 .contact-section {
   position: relative;
@@ -20,8 +20,8 @@
   right: 0;
   bottom: 0;
   background-image:
-    radial-gradient(circle at 20% 50%, rgba(198, 168, 75, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(198, 168, 75, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgba(100, 116, 139, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(100, 116, 139, 0.03) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -73,10 +73,10 @@
 }
 
 .contact-section__title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 48px;
-  font-weight: 400;
-  letter-spacing: -1px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--color-primary);
   line-height: 1.2;
   margin: 0;
@@ -118,8 +118,8 @@
 }
 
 .contact-section__info-card:hover {
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: none;
 }
 
 /* ========== INFO BLOCKS ========== */
@@ -138,9 +138,8 @@
   align-items: center;
   justify-content: center;
 
-  /* Gold accent on cream */
   color: var(--color-accent);
-  background: var(--color-secondary);
+  background: var(--color-secondary-200);
   border-radius: var(--radius-sm);
 
   transition: all 0.3s ease;
@@ -160,7 +159,7 @@
 .contact-section__info-label {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-accent);
   margin: 0;
@@ -256,7 +255,7 @@
 .contact-section__right textarea:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(198, 168, 75, 0.15);
+  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.12);
 }
 
 .contact-section__right input:hover:not(:focus),
@@ -294,7 +293,6 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
 
-  /* Gold button */
   background: var(--color-accent);
   color: #FFFFFF;
 
@@ -305,18 +303,18 @@
   position: relative;
   overflow: hidden;
 
-  box-shadow: 0 4px 16px rgba(198, 168, 75, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .contact-section__right button:hover:not(:disabled) {
   background: var(--color-accent-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(198, 168, 75, 0.35);
+  transform: none;
+  box-shadow: var(--shadow-lg);
 }
 
 .contact-section__right button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 16px rgba(198, 168, 75, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .contact-section__right button:disabled {
