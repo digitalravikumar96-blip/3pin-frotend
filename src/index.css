@@ -1097,3 +1097,7 @@ img[data-loading="true"] {
 .hero-text span {
   color: inherit !important;
 }
+
+input:focus , textarea:focus{
+  border: none !important;
+}
