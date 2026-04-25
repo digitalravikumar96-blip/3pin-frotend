@@ -100,10 +100,11 @@ export function HomePage() {
                 isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'
               }`}
             >
-              <div className="relative max-w-2xl mx-auto">
-                {/* Search bar with white card */}
-                <div className="home-hero-search relative p-3 sm:p-4 shadow-xl border border-[var(--color-neutral-200)]">
+              <div className="relative max-w-3xl mx-auto">
+                {/* Unified hero search bar */}
+                <div className="relative">
                   <SearchBar
+                    variant="heroUnified"
                     onSearch={({ query, location }) => {
                       const params = new URLSearchParams()
                       if (query) params.set('q', query)
@@ -149,7 +150,7 @@ export function HomePage() {
         </button>
 
         {/* Side Decorative Elements */}
-        <div className="absolute left-6 sm:left-10 top-1/2 z-10 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-[var(--color-primary)]">
+        {/* <div className="absolute left-6 sm:left-10 top-1/2 z-10 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-[var(--color-primary)]">
           <div className="w-px h-20 bg-gradient-to-b from-transparent via-[var(--color-primary)]/35 to-transparent" />
           <span className="hero-ambient-text font-sans text-[10px] uppercase tracking-[0.3em] font-medium -rotate-90 origin-center whitespace-nowrap translate-x-[-1.5rem]">
             Est. 2009
@@ -163,7 +164,7 @@ export function HomePage() {
             Lagos, Nigeria
           </span>
           <div className="w-px h-20 bg-gradient-to-b from-transparent via-[var(--color-primary)]/35 to-transparent" />
-        </div>
+        </div> */}
       </section>
 
       {/* Featured Properties Section - Light */}

@@ -101,16 +101,34 @@ export function PropertyPage() {
       })
     : 'Immediate'
 
+  const scrollToSection = (id) => {
+    const target = document.getElementById(id)
+    if (!target) return
+
+    const header = document.querySelector('.main-header')
+    const headerHeight = header?.offsetHeight ?? 80
+    const getTargetTop = () =>
+      Math.max(target.getBoundingClientRect().top + window.scrollY - headerHeight - 20, 0)
+
+    // Smoothly move toward the section first.
+    window.scrollTo({ top: getTargetTop(), behavior: 'smooth' })
+
+    // Then snap precisely once layout/sticky calculations settle.
+    setTimeout(() => {
+      window.scrollTo({ top: getTargetTop(), behavior: 'auto' })
+    }, 320)
+  }
+
   const scrollToMap = () => {
-    document.getElementById('property-map')?.scrollIntoView({ behavior: 'smooth' })
+    scrollToSection('property-map')
   }
 
   const scrollToInquiry = () => {
-    document.getElementById('property-inquiry')?.scrollIntoView({ behavior: 'smooth' })
+    scrollToSection('property-inquiry')
   }
 
   const scrollToSchedule = () => {
-    document.getElementById('property-schedule')?.scrollIntoView({ behavior: 'smooth' })
+    scrollToSection('property-schedule')
   }
 
   const openBrochureModal = () => {
@@ -467,7 +485,8 @@ export function PropertyPage() {
 
                 <button
                   type="button"
-                  onClick={scrollToInquiry}
+                  // onClick={scrollToInquiry}
+                  onClick={() => navigate('/contact')}
                   className="flex w-full items-center gap-3 rounded-lg border border-[var(--color-neutral-200)] bg-white px-3 py-3 text-left text-sm font-medium text-[var(--color-primary)] transition hover:border-[var(--color-accent)]"
                 >
                   <PhoneIcon className="h-5 w-5 shrink-0 text-[var(--color-accent)]" />

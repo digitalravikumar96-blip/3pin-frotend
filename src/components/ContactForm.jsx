@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'react-hot-toast'
 
 const TIME_SLOTS = [
   '09:00 AM',
@@ -23,6 +24,30 @@ export function ContactForm({
   const [status, setStatus] = useState('idle')
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', date: '', time: '' })
 
+  const today = new Date().toISOString().split("T")[0];
+
+const filteredTimeSlots = useMemo(() => {
+  if (!form.date) return TIME_SLOTS;
+
+  // If not today → allow all
+  if (form.date !== today) return TIME_SLOTS;
+
+  const now = new Date();
+
+  return TIME_SLOTS.filter((slot) => {
+    const [time, modifier] = slot.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    const slotDate = new Date();
+    slotDate.setHours(hours, minutes, 0, 0);
+
+    return slotDate > now;
+  });
+}, [form.date]);
+
   const canSubmit = useMemo(
     () =>
       Boolean(
@@ -37,10 +62,25 @@ export function ContactForm({
     e.preventDefault()
     if (!canSubmit) return
     setStatus('loading')
+
+    const promise = onSubmit
+      ? onSubmit(form)
+      : new Promise((res) => setTimeout(res, 1000))
+
+      promise
+      .then(() => {
+        toast.success('Message sent successfully')
+      })
+      .catch(() => {
+        toast.error('Failed to send message')
+      })
+
     try {
-      await onSubmit?.(form)
+      await promise
       setStatus('success')
-    } catch {
+      setForm({ name: '', email: '', phone: '', message: '', date: '', time: '' })
+    } catch (err) {
+      console.error(err)
       setStatus('error')
     } finally {
       setTimeout(() => setStatus('idle'), 2500)
@@ -84,6 +124,7 @@ export function ContactForm({
             <input
               type="date"
               value={form.date}
+              min={new Date().toISOString().split("T")[0]}
               onChange={(e) => setForm((s) => ({ ...s, date: e.target.value }))}
               className="luxury-input text-sm"
             />
@@ -93,8 +134,10 @@ export function ContactForm({
               className="luxury-input text-sm"
             >
               <option value="">Select time</option>
-              {TIME_SLOTS.map((slot) => (
-                <option key={slot} value={slot}>{slot}</option>
+              {filteredTimeSlots.map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
               ))}
             </select>
           </div>
@@ -111,10 +154,6 @@ export function ContactForm({
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             Sending...
           </span>
-        ) : status === 'success' ? (
-          'Message Sent'
-        ) : status === 'error' ? (
-          'Try Again'
         ) : (
           'Send Message'
         )}

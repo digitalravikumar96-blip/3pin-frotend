@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline'
 import '../styles/sell.css'
 
 export function SellPage() {
@@ -20,24 +22,23 @@ export function SellPage() {
     e.preventDefault()
     if (!canSubmit) return
     setStatus('loading')
-    try {
-      const payload = {
-        name: String(form.name || '').trim(),
-        email: String(form.email || '').trim(),
-        phone: String(form.phone || '').trim(),
-        message: String(form.message || '').trim(),
-        leadType: 'sell_property',
-        sheetName: 'Sell Your Property',
-      }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/contact`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
+    const payload = {
+      name: String(form.name || '').trim(),
+      email: String(form.email || '').trim(),
+      phone: String(form.phone || '').trim(),
+      message: String(form.message || '').trim(),
+      leadType: 'sell_property',
+      sheetName: 'Sell Your Property',
+    }
 
+    const promise = fetch(`${import.meta.env.VITE_API_BASE_URL}/api/contact`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }).then(async (response) => {
       if (!response.ok) {
         let apiError = 'Failed to submit'
         try {
@@ -48,9 +49,23 @@ export function SellPage() {
         }
         throw new Error(apiError)
       }
+      return response
+    })
 
+    promise
+      .then(() => {
+        toast.success('Valuation Requested')
+      })
+      .catch(() => {
+        toast.error('Error - Try Again')
+      })
+
+    try {
+      await promise
       setStatus('success')
-    } catch {
+      setForm({ name: '', email: '', phone: '', message: '' })
+    } catch (err) {
+      console.error(err)
       setStatus('error')
     } finally {
       setTimeout(() => setStatus('idle'), 2500)
@@ -114,6 +129,17 @@ export function SellPage() {
                 <p className="sell-section__info-text">Coordinated property showings with pre-qualified buyers at convenient times</p>
               </div>
             </div>
+
+            {/* End to End Assistance */}
+            <div className="sell-section__info-block">
+              <div className="sell-section__info-icon">
+                <ClipboardDocumentCheckIcon />
+              </div>
+              <div>
+                <h3 className="sell-section__info-label">End to End Assistance</h3>
+                <p className="sell-section__info-text">End-to-end documentation support including sale agreements, legal verification, registration, and handover - handled with precision so you close without hassle.</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -164,13 +190,8 @@ export function SellPage() {
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Processing...
                 </span>
-              ) : status === 'success' ? (
-                'Valuation Requested'
-              ) : status === 'error' ? (
-                'Error - Try Again'
-              ) : (
-                'Get Free Property Valuation'
-              )}
+              ) :'Get Free Property Valuation'
+              }
             </button>
           </form>
         </div>

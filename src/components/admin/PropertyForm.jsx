@@ -72,8 +72,8 @@ function propertyToFormState(p) {
   return {
     title: row.title ?? '',
     price: numToInput(row.price),
-    minPrice: numToInput(row.minPrice),
-    maxPrice: numToInput(row.maxPrice),
+    minPrice: row.minPrice == null ? '' : String(row.minPrice),
+    maxPrice: row.maxPrice == null ? '' : String(row.maxPrice),
     currency: row.currency || 'INR',
     paymentPlan: row.paymentPlan ?? 'Full payment',
     location: row.location ?? '',
@@ -400,7 +400,7 @@ export function PropertyForm() {
           <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="property-title">
-                Title
+                Title *
               </label>
               <input
                 id="property-title"
@@ -420,7 +420,7 @@ export function PropertyForm() {
             </div>
             <div>
               <label className={labelClass} htmlFor="property-price">
-                List price (INR)
+                List price (INR) *
               </label>
               <input
                 id="property-price"
@@ -457,11 +457,10 @@ export function PropertyForm() {
             <div>
               <label className={labelClass}>Min price (optional range)</label>
               <input
-                type="number"
-                min={0}
+                type="text"
                 value={form.minPrice}
                 onChange={(e) => setForm((s) => ({ ...s, minPrice: e.target.value }))}
-                placeholder="e.g. 20500000"
+                placeholder="e.g. 70Lakh"
                 disabled={formDisabled}
                 className={fieldClass}
               />
@@ -469,11 +468,10 @@ export function PropertyForm() {
             <div>
               <label className={labelClass}>Max price (optional range)</label>
               <input
-                type="number"
-                min={0}
+                type="text"
                 value={form.maxPrice}
                 onChange={(e) => setForm((s) => ({ ...s, maxPrice: e.target.value }))}
-                placeholder="e.g. 30500000"
+                placeholder="e.g. 2Crore"
                 disabled={formDisabled}
                 className={fieldClass}
               />
@@ -490,7 +488,7 @@ export function PropertyForm() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Location (short)</label>
+              <label className={labelClass}>Location (short) *</label>
               <input
                 type="text"
                 value={form.location}
@@ -575,6 +573,7 @@ export function PropertyForm() {
                 <option value="">None</option>
                 <option value="New Launch">New Launch</option>
                 <option value="Ready to Move">Ready to Move</option>
+                <option value="Exclusive">Exclusive</option>
                 <option value="Under Construction">Under Construction</option>
               </select>
             </div>
@@ -930,7 +929,7 @@ export function PropertyForm() {
             </div>
           ) : null}
           <div className="space-y-2">
-            <label className={labelClass}>{isEdit ? 'Add more images (optional)' : 'Images (up to 10)'}</label>
+            <label className={labelClass}>{isEdit ? 'Add more images (optional)' : 'Images (up to 10) *'}</label>
             <input
               type="file"
               name="images"

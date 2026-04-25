@@ -1,8 +1,9 @@
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { WhatsAppButton } from '../components/WhatsAppButton'
-import Logo from '../assets/Logo.PNG'
+import Logo from '../assets/logo.jpeg'
 
 const navItems = [
   { label: 'Home', to: '/' },
@@ -26,7 +27,7 @@ function NavItem({ to, children, mobile = false }) {
           [
             'nav-link-mobile block py-3 px-4 text-sm font-medium transition',
             isActive
-              ? 'text-[var(--color-accent)] bg-[var(--color-secondary-200)]'
+              ? 'text-[var(--color-primary)] bg-[var(--color-secondary-200)]'
               : 'text-[var(--color-neutral-600)] hover:text-[var(--color-primary)] hover:bg-[var(--color-secondary-100)]',
           ].join(' ')
         }
@@ -52,10 +53,21 @@ function NavItem({ to, children, mobile = false }) {
 }
 
 export function BaseLayout() {
+  const location = useLocation()
+  const isHomePage = location.pathname === '/'
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-secondary)]">
-      {/* Navigation - Light Luxury */}
-      <Disclosure as="header" className="main-header sticky top-0 z-50">
+      {/* Navigation - Light Minimal */}
+      <Disclosure as="header" className={`main-header fixed top-0 inset-x-0 z-50 ${isScrolled ? 'main-header-scrolled' : ''}`}>
         {({ open }) => (
           <>
             <div className="header-container">
@@ -72,7 +84,7 @@ export function BaseLayout() {
                       Three Pin
                     </div>
                     <div className="font-sans text-[10px] uppercase tracking-[0.2em] text-[var(--color-neutral-500)]">
-                      Properties
+                      Realty
                     </div>
                   </div>
                 </NavLink>
@@ -92,7 +104,7 @@ export function BaseLayout() {
                     to="/admin/login"
                     className="header-cta hidden md:inline-flex"
                   >
-                    Admin
+                    ADMIN
                   </NavLink>
 
                   {/* Mobile Menu Button */}
@@ -116,7 +128,7 @@ export function BaseLayout() {
                   to="/admin/login"
                   className="header-mobile-cta"
                 >
-                  Admin
+                  ADMIN
                 </NavLink>
               </nav>
             </Disclosure.Panel>
@@ -125,7 +137,7 @@ export function BaseLayout() {
       </Disclosure>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className={`flex-1 ${isHomePage ? '' : 'pt-20'}`}>
         <Outlet />
       </main>
 
@@ -145,7 +157,7 @@ export function BaseLayout() {
                 <div>
                   <div className="font-serif text-xl font-medium text-[var(--color-primary)]">Three Pin</div>
                   <div className="font-sans text-[11px] uppercase tracking-[0.2em] text-[var(--color-neutral-500)]">
-                    Properties
+                    Realty
                   </div>
                 </div>
               </div>
