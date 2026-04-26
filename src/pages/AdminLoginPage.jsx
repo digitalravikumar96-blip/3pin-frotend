@@ -32,7 +32,7 @@ export function AdminLoginPage() {
         {/* <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600 leading-relaxed">
           <p className="font-semibold text-slate-800">Property admin (after sign-in)</p>
           <p className="mt-1">
-            You can capture the full public listing: price range, payment label, super built-up (sq ft), builder, unit
+            You can capture the full public listing: price range, payment label, super built-up (sq ft), handover date, unit
             count, price per sqft, structure, towers, completion date, launch badge, amenities (one per line), nearby
             landmarks (<span className="font-mono">Name | distance</span> per line), map embed URL or lat/long, YouTube
             tour, brochure URL, and floor-plan uploads.

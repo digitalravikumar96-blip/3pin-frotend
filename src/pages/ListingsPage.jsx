@@ -5,6 +5,7 @@ import { FilterSidebar } from '../components/FilterSidebar'
 import { PropertyCard } from '../components/PropertyCard'
 import { SearchBar } from '../components/SearchBar'
 import { api, normalizeProperty } from '../services/api'
+import { parsePriceToNumber } from '../data/properties'
 
 function includes(haystack, needle) {
   return String(haystack || '').toLowerCase().includes(String(needle || '').toLowerCase())
@@ -39,7 +40,10 @@ export function ListingsPage() {
       if (loc && !includes(p.location, loc)) return false
       if (filters.location && !includes(p.location, filters.location)) return false
       if (filters.type && p.type !== filters.type) return false
-      if (filters.budget && p.price > filters.budget) return false
+      if (filters.budget) {
+        const priceNum = parsePriceToNumber(p.price)
+        if (priceNum != null && priceNum > filters.budget) return false
+      }
       return true
     })
 
@@ -54,7 +58,12 @@ export function ListingsPage() {
         const bDate = b.deliveryDate ? new Date(b.deliveryDate).getTime() : Infinity
         return aDate - bDate
       }
-      return a.price - b.price
+      const aPrice = parsePriceToNumber(a.price)
+      const bPrice = parsePriceToNumber(b.price)
+      if (aPrice == null && bPrice == null) return 0
+      if (aPrice == null) return 1
+      if (bPrice == null) return -1
+      return aPrice - bPrice
     })
   }, [q, loc, filters, sortBy, properties])
 

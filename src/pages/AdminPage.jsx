@@ -100,7 +100,7 @@ export function AdminPage() {
 
   function handleSubmit(e) {
     e.preventDefault()
-    const price = Number(form.price || 0)
+    const price = String(form.price || '').trim()
     if (!form.title.trim() || !form.location.trim() || !price) return
 
     const youtubeId = extractYoutubeId(form.videoUrl)
@@ -335,11 +335,10 @@ export function AdminPage() {
             />
             <div className="grid gap-2 sm:grid-cols-3">
               <input
-                type="number"
-                min={0}
+                type="text"
                 value={form.price}
                 onChange={(e) => setForm((s) => ({ ...s, price: e.target.value }))}
-                placeholder="Price (INR)"
+                placeholder="Price (e.g. 80 Lakhs)"
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/20"
               />
               <select

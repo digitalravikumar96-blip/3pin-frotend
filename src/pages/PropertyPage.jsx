@@ -39,7 +39,7 @@ function specChipsFromProperty(p, completionLabel) {
     { label: 'Bedrooms', value: p.bedrooms != null && p.bedrooms !== '' ? String(p.bedrooms) : null },
     { label: 'Bathrooms', value: p.bathrooms != null && p.bathrooms !== '' ? String(p.bathrooms) : null },
     {
-      label: 'Super built-up',
+      label: 'Total Land Area',
       value:
         p.areaSqftMin != null && p.areaSqftMax != null
           ? `${formatINRPlain(p.areaSqftMin)} – ${formatINRPlain(p.areaSqftMax)} sqft`
@@ -212,7 +212,7 @@ export function PropertyPage() {
   }
 
   const priceBar =
-    property.minPrice != null && property.maxPrice != null
+    String(property.minPrice || '').trim() && String(property.maxPrice || '').trim()
       ? `${formatPrice(property.minPrice, property.currency)} – ${formatPrice(property.maxPrice, property.currency)}`
       : formatPrice(property.price, property.currency)
 
@@ -279,8 +279,15 @@ export function PropertyPage() {
                 {property.title}
               </h1>
               <p className="font-sans text-sm text-[var(--color-neutral-500)] mt-2">{property.location}</p>
-              {property.builder ? (
-                <p className="font-sans text-xs text-[var(--color-neutral-400)] mt-1">Developed by {property.builder}</p>
+              {property.deliveryDate ? (
+                <p className="font-sans text-xs text-[var(--color-neutral-400)] mt-1">
+                  Handover Date{' '}
+                  {new Date(property.deliveryDate).toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </p>
               ) : null}
             </div>
             <div className="lg:text-right shrink-0">

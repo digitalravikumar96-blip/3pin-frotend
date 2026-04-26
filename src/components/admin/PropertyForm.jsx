@@ -49,6 +49,16 @@ function numToInput(v) {
   return Number.isFinite(n) ? String(n) : ''
 }
 
+function textToInput(v) {
+  if (v == null) return ''
+  return String(v).trim()
+}
+
+function hasPriceNumberAndText(v) {
+  const text = String(v || '').trim()
+  return /\d/.test(text) && /[a-zA-Z]/.test(text)
+}
+
 function landmarksToText(landmarks) {
   if (!Array.isArray(landmarks)) return ''
   return landmarks
@@ -71,7 +81,7 @@ function propertyToFormState(p) {
 
   return {
     title: row.title ?? '',
-    price: numToInput(row.price),
+    price: textToInput(row.price),
     minPrice: row.minPrice == null ? '' : String(row.minPrice),
     maxPrice: row.maxPrice == null ? '' : String(row.maxPrice),
     currency: row.currency || 'INR',
@@ -298,7 +308,7 @@ export function PropertyForm() {
   const validate = () => {
     const err = {}
     if (!form.title.trim()) err.title = 'Title is required.'
-    if (!form.price || Number(form.price) <= 0) err.price = 'Valid price is required.'
+    if (!hasPriceNumberAndText(form.price)) err.price = 'Enter list price like "80 Lakhs".'
     if (!form.location.trim()) err.location = 'Location is required.'
     const imageCount = existingImages.length + files.length
     if (imageCount < 1) err.images = 'At least one image is required. Add files or keep existing gallery images.'
@@ -424,14 +434,14 @@ export function PropertyForm() {
               </label>
               <input
                 id="property-price"
-                type="number"
+                type="text"
                 min={0}
                 value={form.price}
                 onChange={(e) => {
                   setForm((s) => ({ ...s, price: e.target.value }))
                   clearFieldError('price')
                 }}
-                placeholder="e.g. 25000000"
+                placeholder="e.g. 25 Lakhs"
                 disabled={formDisabled}
                 className={fieldClassPrice}
                 aria-invalid={Boolean(fieldErrors.price)}
@@ -608,7 +618,7 @@ export function PropertyForm() {
               />
             </div>
             <div className="space-y-2">
-              <label className={labelClass}>Area (m²)</label>
+              <label className={labelClass}>Total Land Area (m²)</label>
               <input
                 type="number"
                 min={0}
@@ -620,7 +630,7 @@ export function PropertyForm() {
                 className={fieldClass}
               />
             </div>
-            <div className="space-y-2">
+              <div className="space-y-2">
               <label className={labelClass}>Super built-up min (sq ft)</label>
               <input
                 type="number"
@@ -731,7 +741,7 @@ export function PropertyForm() {
               />
             </div>
             <div className="space-y-2">
-              <label className={labelClass}>Completion date</label>
+              <label className={labelClass}>Handover date</label>
               <input
                 type="date"
                 value={form.deliveryDate}

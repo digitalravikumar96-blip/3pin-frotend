@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
-
-function formatINR(value) {
-  const n = Number(value)
-  if (!Number.isFinite(n)) return '—'
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(n)
-}
+import { formatPrice } from '../data/properties'
 
 const ADMIN_TOAST_KEY = 'adminToast'
 
@@ -191,8 +186,7 @@ export function AdminPropertyListPage() {
                       </td>
                       <td className="px-5 py-4 text-slate-800">{p.location || '—'}</td>
                       <td className="px-5 py-4 text-base font-semibold tabular-nums text-slate-900">
-                        {p.currency && p.currency !== 'INR' ? `${p.currency} ` : '₹ '}
-                        {formatINR(p.price)}
+                        {formatPrice(p.price, p.currency || 'INR')}
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex flex-wrap items-center justify-end gap-2">

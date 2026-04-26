@@ -253,11 +253,66 @@ export const properties = [
   },
 ]
 
+const PRICE_UNITS = {
+  k: 1_000,
+  thousand: 1_000,
+  lakh: 100_000,
+  lakhs: 100_000,
+  lac: 100_000,
+  lacs: 100_000,
+  cr: 10_000_000,
+  crore: 10_000_000,
+  crores: 10_000_000,
+  m: 1_000_000,
+  million: 1_000_000,
+}
+
+export function parsePriceToNumber(value) {
+  if (value == null) return null
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+
+  const text = String(value).trim()
+  if (!text) return null
+
+  const normalized = text.replace(/,/g, '').toLowerCase()
+  const match = normalized.match(/^(\d+(?:\.\d+)?)\s*([a-z]+)?$/)
+  if (!match) return null
+
+  const amount = Number(match[1])
+  if (!Number.isFinite(amount)) return null
+
+  const unit = match[2]
+  if (!unit) return amount
+
+  const multiplier = PRICE_UNITS[unit]
+  if (!multiplier) return null
+  return amount * multiplier
+}
+
 export function formatPrice(value, currency = 'INR') {
+  if (value == null || value === '') return '—'
+
+  if (typeof value === 'string') {
+    const raw = value.trim()
+    if (!raw) return '—'
+    // Keep authored labels like "80 Lakhs" as-is.
+    if (/[a-zA-Z]/.test(raw)) return raw
+
+    const parsed = parsePriceToNumber(raw)
+    if (!Number.isFinite(parsed)) return raw
+    try {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(parsed)
+    } catch {
+      return `${currency} ${raw}`
+    }
+  }
+
+  const parsed = parsePriceToNumber(value)
+  if (!Number.isFinite(parsed)) return String(value)
   try {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value)
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency, maximumFractionDigits: 0 }).format(parsed)
   } catch {
-    return `${currency} ${value.toLocaleString()}`
+    return `${currency} ${parsed.toLocaleString()}`
   }
 }
 
