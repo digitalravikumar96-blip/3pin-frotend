@@ -29,21 +29,34 @@
 .sell-section__container {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 40px;
-  align-items: start;
+}
+
+.sell-section__header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.sell-section__content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: stretch;
 }
 
 /* ========== RESPONSIVE DESIGN ========== */
 @media (max-width: 1024px) {
   .sell-section__container {
-    grid-template-columns: 1fr;
-    gap: 50px;
     padding: 0 24px;
+  }
+
+  .sell-section__content-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 
@@ -53,8 +66,11 @@
   }
 
   .sell-section__container {
-    gap: 40px;
     padding: 0 20px;
+  }
+
+  .sell-section__header {
+    margin-bottom: 20px;
   }
 }
 
@@ -63,13 +79,7 @@
 .sell-section__left {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-}
-
-.sell-section__header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  height: 100%;
 }
 
 .sell-section__title {
@@ -92,9 +102,9 @@
   font-size: 16px;
   font-weight: 400;
   color: var(--color-neutral-500);
-  line-height: 1.7;
+  line-height: 1.65;
   margin: 0;
-  max-width: 500px;
+  max-width: 560px;
 }
 
 /* ========== INFO CARD - WHITE CARD ========== */
@@ -102,13 +112,14 @@
 .sell-section__info-card {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 0;
+  height: 100%;
 
   /* White card styling */
   background: #FFFFFF;
   border: 1px solid var(--color-neutral-200);
-  border-radius: var(--radius-md);
-  padding: 32px;
+  border-radius: 10px;
+  padding: 10px 18px;
 
   /* Soft shadow */
   box-shadow: var(--shadow-prestige);
@@ -128,6 +139,11 @@
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  padding: 18px 0;
+}
+
+.sell-section__info-block + .sell-section__info-block {
+  border-top: 1px solid var(--color-neutral-200);
 }
 
 .sell-section__info-icon {
@@ -200,6 +216,18 @@
 .sell-section__right {
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+.sell-section__form-card {
+  background: #ffffff;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: var(--shadow-prestige);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ========== FORM STYLING ========== */
@@ -207,13 +235,13 @@
 .sell-section__right form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .sell-section__right form > :first-child {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 /* Premium Input Fields - Light Theme */
@@ -231,14 +259,14 @@
   appearance: none;
 
   width: 100%;
-  padding: 14px 18px;
+  padding: 13px 14px;
   font-size: 15px;
   font-family: inherit;
 
   /* Light styling */
   background: #FFFFFF;
   border: 1px solid var(--color-neutral-200);
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   color: var(--color-primary);
 
   transition: all 0.3s ease;
@@ -259,7 +287,7 @@
   border: none;
 
   width: 100%;
-  padding: 14px 28px;
+  padding: 13px 20px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -269,7 +297,7 @@
   background: var(--color-accent);
   color: #FFFFFF;
 
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   cursor: pointer;
 
   transition: all 0.3s ease;
@@ -340,7 +368,7 @@
   border: none;
 
   width: 100%;
-  padding: 14px 28px;
+  padding: 13px 20px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -350,7 +378,7 @@
   background: var(--color-accent);
   color: #FFFFFF;
 
-  border-radius: var(--radius-sm);
+  border-radius: 8px;
   cursor: pointer;
 
   transition: all 0.3s ease;

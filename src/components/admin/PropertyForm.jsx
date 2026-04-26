@@ -20,6 +20,7 @@ function emptyPropertyForm() {
     area: '',
     areaSqftMin: '',
     areaSqftMax: '',
+    landAreaAcres: '',
     type: '',
     builder: '',
     unitsCount: '',
@@ -91,9 +92,10 @@ function propertyToFormState(p) {
     description: row.description ?? '',
     bedrooms: numToInput(row.bedrooms),
     bathrooms: numToInput(row.bathrooms),
-    area: numToInput(row.area),
+    area: textToInput(row.area),
     areaSqftMin: numToInput(row.areaSqftMin),
     areaSqftMax: numToInput(row.areaSqftMax),
+    landAreaAcres: numToInput(row.landAreaAcres),
     type: row.type ?? '',
     builder: row.builder ?? '',
     unitsCount: numToInput(row.unitsCount),
@@ -132,6 +134,7 @@ function appendPayload(fd, form) {
   if (form.area) fd.append('area', String(form.area))
   if (form.areaSqftMin) fd.append('areaSqftMin', String(form.areaSqftMin))
   if (form.areaSqftMax) fd.append('areaSqftMax', String(form.areaSqftMax))
+  if (form.landAreaAcres) fd.append('landAreaAcres', String(form.landAreaAcres))
   if (form.type) fd.append('type', form.type.trim())
   fd.append('builder', form.builder.trim())
   if (form.unitsCount) fd.append('unitsCount', String(form.unitsCount))
@@ -587,6 +590,19 @@ export function PropertyForm() {
                 <option value="Under Construction">Under Construction</option>
               </select>
             </div>
+            <div>
+              <label className={labelClass}>Exclusive</label>
+              <select
+                value={form.launchStatus}
+                onChange={(e) => setForm((s) => ({ ...s, launchStatus: e.target.value }))}
+                disabled={formDisabled}
+                className={fieldClass}
+              >
+                <option value="">None</option>
+                <option value="Exclusive">Exclusive</option>
+                <option value="Under Construction">Under Construction</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -618,9 +634,9 @@ export function PropertyForm() {
               />
             </div>
             <div className="space-y-2">
-              <label className={labelClass}>Total Land Area (m²)</label>
+              <label className={labelClass}>Total Land Area</label>
               <input
-                type="number"
+                type="text"
                 min={0}
                 step="0.01"
                 value={form.area}
@@ -650,6 +666,19 @@ export function PropertyForm() {
                 value={form.areaSqftMax}
                 onChange={(e) => setForm((s) => ({ ...s, areaSqftMax: e.target.value }))}
                 placeholder="e.g. 2500"
+                disabled={formDisabled}
+                className={fieldClass}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className={labelClass}>Land area (acres)</label>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.landAreaAcres}
+                onChange={(e) => setForm((s) => ({ ...s, landAreaAcres: e.target.value }))}
+                placeholder="e.g. 1"
                 disabled={formDisabled}
                 className={fieldClass}
               />

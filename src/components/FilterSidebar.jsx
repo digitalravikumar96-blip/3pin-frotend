@@ -5,6 +5,7 @@ const TYPES = ['Apartment', 'Terrace', 'Detached', 'Semi-Detached', 'Duplex', 'C
 export function FilterSidebar({ filters, onChange }) {
   const next = useMemo(
     () => ({
+      ...filters,
       location: filters?.location || '',
       budget: Number.isFinite(filters?.budget) ? filters.budget : 0,
       type: filters?.type || '',

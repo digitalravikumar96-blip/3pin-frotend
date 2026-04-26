@@ -40,12 +40,7 @@ function specChipsFromProperty(p, completionLabel) {
     { label: 'Bathrooms', value: p.bathrooms != null && p.bathrooms !== '' ? String(p.bathrooms) : null },
     {
       label: 'Total Land Area',
-      value:
-        p.areaSqftMin != null && p.areaSqftMax != null
-          ? `${formatINRPlain(p.areaSqftMin)} – ${formatINRPlain(p.areaSqftMax)} sqft`
-          : p.areaSqm != null
-            ? `${p.areaSqm} m²`
-            : null,
+      value: p.area
     },
     { label: 'No. of units', value: p.unitsCount != null ? `${p.unitsCount} Units` : null },
     { label: 'Completion', value: completionLabel },
@@ -215,6 +210,7 @@ export function PropertyPage() {
     String(property.minPrice || '').trim() && String(property.maxPrice || '').trim()
       ? `${formatPrice(property.minPrice, property.currency)} – ${formatPrice(property.maxPrice, property.currency)}`
       : formatPrice(property.price, property.currency)
+  const priceBarWithRupee = priceBar && priceBar.includes('₹') ? priceBar : `₹ ${priceBar}`
 
   const sqftBar =
     property.areaSqftMin != null && property.areaSqftMax != null
@@ -253,14 +249,6 @@ export function PropertyPage() {
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                {property.launchStatus ? (
-                  <span
-                    className="inline-flex items-center px-3.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider text-white"
-                    style={{ background: 'var(--color-accent)' }}
-                  >
-                    {property.launchStatus}
-                  </span>
-                ) : null}
                 {property.isNewDevelopment && !property.launchStatus ? (
                   <span
                     className="inline-flex items-center px-3.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider text-white"
@@ -291,7 +279,7 @@ export function PropertyPage() {
               ) : null}
             </div>
             <div className="lg:text-right shrink-0">
-              <p className="font-serif text-2xl sm:text-3xl text-[var(--color-primary)]">{priceBar}</p>
+              <p className="font-serif text-2xl sm:text-3xl text-[var(--color-primary)]">{priceBarWithRupee}</p>
               <p className="font-sans text-[10px] font-semibold uppercase tracking-wider text-[var(--color-neutral-500)] mt-1">
                 {property.paymentPlan || 'Full payment'}
               </p>
@@ -302,7 +290,13 @@ export function PropertyPage() {
 
       <div className="luxury-container max-w-[1180px] py-8 px-4 sm:px-6 lg:px-8">
         <section className="rounded-[var(--radius-md)] overflow-hidden shadow-[var(--shadow-prestige)] border border-[var(--color-neutral-200)] bg-white mb-5">
-          <ImageCarousel images={property.images} alt={property.title} cashbackEligible={property.cashbackEligible} />
+          <ImageCarousel
+            images={property.images}
+            alt={property.title}
+            cashbackEligible={property.cashbackEligible}
+            launchStatus={property.launchStatus}
+            onBookSiteVisit={scrollToSchedule}
+          />
         </section>
 
         <div className="prestige-card p-5 sm:p-6 mb-8 flex flex-col lg:flex-row flex-wrap gap-6 lg:gap-10 lg:items-center lg:justify-between">
@@ -311,7 +305,7 @@ export function PropertyPage() {
               <div className="font-sans text-[10.5px] font-semibold uppercase tracking-wider text-[var(--color-neutral-500)] mb-1">
                 Price range
               </div>
-              <div className="font-serif text-xl text-[var(--color-primary)]">{priceBar}</div>
+              <div className="font-serif text-xl text-[var(--color-primary)]">{priceBarWithRupee}</div>
             </div>
             <div>
               <div className="font-sans text-[10.5px] font-semibold uppercase tracking-wider text-[var(--color-neutral-500)] mb-1">

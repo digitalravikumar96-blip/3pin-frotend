@@ -1,26 +1,47 @@
-import { MapPinIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
 import { formatPrice } from '../data/properties'
 
-// Custom Bed Icon
-function BedIcon({ className }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h18M3 12v4a2 2 0 002 2h14a2 2 0 002-2v-4M3 12V8a2 2 0 012-2h14a2 2 0 012 2v4M7 6h0M7 6a2 2 0 00-2 2v4" />
-    </svg>
-  )
+function formatWholeNumber(value) {
+  if (value == null || value === '') return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || num <= 0) return null
+  return num.toLocaleString('en-IN', { maximumFractionDigits: 0 })
 }
 
-// Custom Bath Icon
-function BathIcon({ className }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12h12M6 12V8a4 4 0 014-4h0a4 4 0 014 4v4M6 12v4a4 4 0 004 4h0a4 4 0 004-4v-4" />
-    </svg>
-  )
+function formatAcres(value) {
+  if (value == null || value === '') return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || num <= 0) return null
+  if (Number.isInteger(num)) return String(num)
+  return num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function withRupeePrefix(priceText, currency) {
+  const text = String(priceText || '').trim()
+  if (!text) return text
+  if (currency !== 'INR') return text
+  if (text.startsWith('₹') || text.startsWith('Rs') || text.startsWith('INR')) return text
+  return `₹${text}`
 }
 
 export function PropertyCard({ property }) {
+  const beds = formatWholeNumber(property.bedrooms)
+  const baths = formatWholeNumber(property.bathrooms)
+  const sqftValue = formatWholeNumber(property.areaSqftMax ?? property.areaSqftMin)
+  const areaSqm = Number(property.areaSqm)
+  const fallbackSqft = Number.isFinite(areaSqm) && areaSqm > 0 ? formatWholeNumber(areaSqm * 10.7639) : null
+  const sqft = sqftValue || fallbackSqft
+  const acres = formatAcres(property.landAreaAcres)
+  const addressText = String(property.addressLine || '').trim() || String(property.location || '').trim()
+
+  const specItems = [
+    beds ? `${beds} beds` : null,
+    baths ? `${baths} baths` : null,
+    sqft ? `${sqft} sqft` : null,
+    acres ? `${acres} acres` : null,
+  ].filter(Boolean)
+  const displayPrice = withRupeePrefix(formatPrice(property.price, property.currency), property.currency)
+
   return (
     <Link
       to={`/property/${property._id ?? property.id}`}
@@ -39,9 +60,6 @@ export function PropertyCard({ property }) {
 
         {/* Price and Type on Image */}
         <div className="prop-card-image-info">
-          <span className="prop-card-price-overlay">
-            {formatPrice(property.price, property.currency)}
-          </span>
           {property.type && (
             <span className="prop-card-type-badge">
               {property.type}
@@ -66,46 +84,9 @@ export function PropertyCard({ property }) {
 
       {/* Content */}
       <div className="prop-card-content">
-        {property.type && (
-          <span className="prop-card-tag">{property.type}</span>
-        )}
-
-        <h3 className="prop-card-title">{property.title}</h3>
-
-        <div className="prop-card-location">
-          <MapPinIcon className="prop-card-icon" />
-          <span>{property.location}</span>
-        </div>
-
-        <hr className="prop-card-divider" />
-
-        <div className="prop-card-details">
-          {property.bedrooms > 0 && (
-            <div className="prop-card-detail-item">
-              <BedIcon className="prop-card-detail-icon" />
-              <span>{property.bedrooms} Beds</span>
-            </div>
-          )}
-          {property.bathrooms > 0 && (
-            <div className="prop-card-detail-item">
-              <BathIcon className="prop-card-detail-icon" />
-              <span>{property.bathrooms} Baths</span>
-            </div>
-          )}
-          {property.areaSqm > 0 && (
-            <div className="prop-card-detail-item">
-              <Squares2X2Icon className="prop-card-detail-icon" />
-              <span>{property.areaSqm} m²</span>
-            </div>
-          )}
-        </div>
-
-        <div className="prop-card-footer">
-          <span className="prop-card-price-main">
-            {formatPrice(property.price, property.currency)}
-          </span>
-          <span className="prop-card-view">View →</span>
-        </div>
+        <div className="prop-card-price-main">{displayPrice}</div>
+        {specItems.length ? <div className="prop-card-specs">{specItems.join(' | ')}</div> : null}
+        {addressText ? <div className="prop-card-address">{addressText}</div> : null}
       </div>
     </Link>
   )

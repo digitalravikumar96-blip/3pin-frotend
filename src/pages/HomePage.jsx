@@ -1,9 +1,170 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRightIcon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import { PropertyCard } from '../components/PropertyCard'
-import { SearchBar } from '../components/SearchBar'
 import { api, normalizeProperty } from '../services/api'
+
+const LOCATION_SUGGESTIONS = ['Medavakkam', 'Pallavaram', 'OMR', 'ECR', 'Adyar']
+
+function highlightMatch(text, query) {
+  if (!query) return text
+  const lowerText = text.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+  const matchIndex = lowerText.indexOf(lowerQuery)
+
+  if (matchIndex === -1) return text
+
+  const before = text.slice(0, matchIndex)
+  const match = text.slice(matchIndex, matchIndex + query.length)
+  const after = text.slice(matchIndex + query.length)
+
+  return (
+    <>
+      {before}
+      <span className="search-highlight">{match}</span>
+      {after}
+    </>
+  )
+}
+
+function IntelligentSearch({
+  suggestions = LOCATION_SUGGESTIONS,
+  onSearch,
+  onDropdownToggle,
+}) {
+  const wrapperRef = useRef(null)
+  const [inputValue, setInputValue] = useState('')
+  const [debouncedValue, setDebouncedValue] = useState('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1)
+  const [selectedValue, setSelectedValue] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(inputValue.trim())
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [inputValue])
+
+  useEffect(() => {
+    onDropdownToggle?.(isDropdownOpen)
+  }, [isDropdownOpen, onDropdownToggle])
+
+  useEffect(() => {
+    const onClickOutside = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setIsDropdownOpen(false)
+        setActiveSuggestionIndex(-1)
+      }
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  const filteredSuggestions = useMemo(() => {
+    if (!debouncedValue) return suggestions
+    const query = debouncedValue.toLowerCase()
+    return suggestions.filter((item) => item.toLowerCase().includes(query))
+  }, [debouncedValue, suggestions])
+
+  const flattenedSuggestions = useMemo(
+    () => filteredSuggestions,
+    [filteredSuggestions]
+  )
+
+  const runSearch = (value) => {
+    const term = value.trim()
+    onSearch?.(term)
+    setIsDropdownOpen(false)
+    setActiveSuggestionIndex(-1)
+  }
+
+  const handleSuggestionSelect = (value) => {
+    setInputValue(value)
+    setDebouncedValue(value)
+    setSelectedValue(value)
+    runSearch(value)
+  }
+
+  const handleInputKeyDown = (event) => {
+    if (!isDropdownOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+      setIsDropdownOpen(true)
+      return
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      if (!flattenedSuggestions.length) return
+      setActiveSuggestionIndex((prev) => (prev + 1) % flattenedSuggestions.length)
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      if (!flattenedSuggestions.length) return
+      setActiveSuggestionIndex((prev) =>
+        prev <= 0 ? flattenedSuggestions.length - 1 : prev - 1
+      )
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      if (isDropdownOpen && activeSuggestionIndex >= 0 && flattenedSuggestions[activeSuggestionIndex]) {
+        handleSuggestionSelect(flattenedSuggestions[activeSuggestionIndex])
+        return
+      }
+      runSearch(inputValue)
+    }
+
+    if (event.key === 'Escape') {
+      setIsDropdownOpen(false)
+      setActiveSuggestionIndex(-1)
+    }
+  }
+
+  return (
+    <div className="smart-search-wrapper" ref={wrapperRef}>
+      <div className="smart-search-field">
+        <input
+          type="text"
+          value={inputValue}
+          placeholder="Search location, property, or area"
+          onFocus={() => setIsDropdownOpen(true)}
+          onChange={(event) => {
+            setInputValue(event.target.value)
+            setIsDropdownOpen(true)
+            setActiveSuggestionIndex(-1)
+          }}
+          onKeyDown={handleInputKeyDown}
+          className="smart-search-input"
+        />
+      </div>
+
+      {isDropdownOpen && (
+        <div className="smart-search-dropdown" role="listbox">
+          {flattenedSuggestions.length ? (
+            <ul className="smart-search-list">
+              {flattenedSuggestions.map((item, optionIndex) => (
+                <li key={item}>
+                  <button
+                    type="button"
+                    className={`smart-search-option ${optionIndex === activeSuggestionIndex ? 'active' : ''} ${selectedValue === item ? 'selected' : ''}`}
+                    onMouseEnter={() => setActiveSuggestionIndex(optionIndex)}
+                    onClick={() => handleSuggestionSelect(item)}
+                  >
+                    <MapPinIcon className="smart-search-option-icon" aria-hidden="true" />
+                    <span>{highlightMatch(item, debouncedValue)}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="smart-search-empty">No results found</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -11,6 +172,9 @@ export function HomePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isVisible, setIsVisible] = useState(false)
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false)
+  const [shouldAnimateStats, setShouldAnimateStats] = useState(false)
+  const statsRef = useRef(null)
 
   useEffect(() => {
     setLoading(true)
@@ -31,6 +195,36 @@ export function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    const node = statsRef.current
+    if (!node || shouldAnimateStats) return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShouldAnimateStats(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldAnimateStats(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.35 }
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [shouldAnimateStats])
+
+  const stats = [
+    { value: 1000, suffix: '+', label: 'Properties Sold' },
+    { value: 15, suffix: '+', label: 'Years Experience' },
+    { value: 100, suffix: '+', label: 'Locations Covers' },
+    { value: '24/7', label: 'Support Available' },
+  ]
+
   const scrollToContent = () => {
     const element = document.getElementById('featured-properties')
     if (element) {
@@ -45,7 +239,7 @@ export function HomePage() {
         {/* Background Image with Light Overlay */}
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80"
+            src="https://www.compass.com/ucfe-assets/homepage/homepage-v4.18.5/assets/hero_desktop2x_res.jpg"
             alt="Luxury Home"
             className="hero-bg-image w-full h-full object-cover scale-105"
           />
@@ -62,7 +256,7 @@ export function HomePage() {
             }`}
           >
             {/* Label Badge */}
-            <div
+            {/* <div
               className={`inline-flex items-center gap-3 mb-8 transition-all duration-700 delay-100 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
@@ -72,43 +266,45 @@ export function HomePage() {
                 Premium Real Estate
               </span>
               <span className="w-12 h-px bg-[var(--color-accent)]" />
-            </div>
+            </div> */}
 
             {/* Main Headline */}
             <h1
-              className={`hero-ambient-text font-serif text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-semibold text-white leading-[1.1] mb-6 transition-all duration-1000 delay-200 ${
+              className={`hero-ambient-text font-serif text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-semibold text-white leading-[1.1] -mt-6 sm:-mt-8 mb-5 sm:mb-6 transition-all duration-1000 delay-200 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
-              <span className="block">Discover</span>
-              <span className="block font-semibold">Exceptional Living</span>
+              <span className="block">Let's Get You Home</span>
+              {/* <span className="font-semibold">Get You Home</span> */}
             </h1>
 
             {/* Subheadline */}
-            <p
+            {/* <p
               className={`hero-ambient-text hero-secondary-text font-sans text-sm sm:text-base text-white max-w-xl mx-auto mb-14 leading-relaxed transition-all duration-1000 delay-300 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
             >
-              Curated properties in the world&apos;s most sought-after locations.
-              Where luxury meets lifestyle.
-            </p>
+              Curated properties just for you.
+            </p> */}
 
             {/* Search Bar Container - Premium White Card */}
             <div
-              className={`transition-all duration-1000 delay-500 ${
+              className={`mt-10 sm:mt-12 transition-all duration-1000 delay-500 ${
                 isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-95'
               }`}
             >
               <div className="relative max-w-3xl mx-auto">
                 {/* Unified hero search bar */}
                 <div className="relative">
-                  <SearchBar
-                    variant="heroUnified"
-                    onSearch={({ query, location }) => {
+                  <IntelligentSearch
+                    suggestions={LOCATION_SUGGESTIONS}
+                    onDropdownToggle={setIsSearchDropdownOpen}
+                    onSearch={(term) => {
                       const params = new URLSearchParams()
-                      if (query) params.set('q', query)
-                      if (location) params.set('loc', location)
+                      if (term) {
+                        params.set('q', term)
+                        params.set('loc', term)
+                      }
                       navigate(`/listings?${params.toString()}`)
                     }}
                   />
@@ -141,7 +337,9 @@ export function HomePage() {
         <button
           type="button"
           onClick={scrollToContent}
-          className="hero-ambient-text hero-secondary-text absolute bottom-10 left-1/2 z-10 -translate-x-1/2 group flex flex-col items-center gap-2 text-white hover:text-white transition-colors duration-300 cursor-pointer"
+          className={`hero-ambient-text hero-secondary-text absolute bottom-6 sm:bottom-8 left-1/2 z-10 -translate-x-1/2 group flex flex-col items-center gap-2 text-white hover:text-white transition-colors duration-300 cursor-pointer ${
+            isSearchDropdownOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
         >
           <span className="text-[10px] uppercase tracking-[0.2em] font-semibold">Scroll</span>
           <div className="relative w-6 h-10 border-2 border-white/70 rounded-full flex items-start justify-center p-1 group-hover:border-white transition-colors">
@@ -241,16 +439,19 @@ export function HomePage() {
                 quality, location, and investment potential.
               </p>
 
-              <div className="grid sm:grid-cols-2 gap-8">
-                {[
-                  { number: '500+', label: 'Properties Sold' },
-                  { number: '15+', label: 'Years Experience' },
-                  { number: '98%', label: 'Client Satisfaction' },
-                  { number: '24/7', label: 'Support Available' },
-                ].map((stat) => (
+              <div ref={statsRef} className="grid sm:grid-cols-2 gap-8">
+                {stats.map((stat) => (
                   <div key={stat.label} className="group">
                     <div className="font-serif text-3xl sm:text-4xl text-[var(--color-primary)] mb-2 group-hover:text-[var(--color-accent)] transition-colors duration-300">
-                      {stat.number}
+                      {typeof stat.value === 'number' ? (
+                        <CountUpNumber
+                          end={stat.value}
+                          suffix={stat.suffix}
+                          start={shouldAnimateStats}
+                        />
+                      ) : (
+                        stat.value
+                      )}
                     </div>
                     <div className="font-sans text-[11px] uppercase tracking-[0.15em] text-[var(--color-neutral-500)]">
                       {stat.label}
@@ -301,7 +502,7 @@ export function HomePage() {
             </h2>
             <div className="w-16 h-px bg-[var(--color-accent)] mx-auto mb-8" />
             <p className="font-sans text-sm sm:text-base text-[var(--color-neutral-600)] max-w-lg mx-auto mb-12 leading-relaxed">
-              Our team of experienced agents is ready to help you find the perfect property
+              Our team is ready to help you find the perfect property
               that matches your lifestyle and aspirations.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -341,7 +542,143 @@ export function HomePage() {
         .animate-fade-in {
           animation: fade-in 0.8s ease-out forwards;
         }
+        .smart-search-wrapper {
+          width: 100%;
+          max-width: 100%;
+          margin: 0 auto;
+          position: relative;
+        }
+        .smart-search-field {
+          display: flex;
+          align-items: center;
+          padding: 0.2rem 0.35rem;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          background: #ffffff;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          border-radius: 999px;
+        }
+        .smart-search-input {
+          flex: 1;
+          border: 0;
+          background: transparent;
+          color: #111111;
+          font-size: 0.95rem;
+          padding: 1rem 1.15rem;
+          font-weight: 400;
+          outline: none;
+        }
+        .smart-search-input::placeholder {
+          color: #8a8a8a;
+        }
+        .smart-search-dropdown {
+          margin: 8px 0 0;
+          padding: 0.28rem;
+          position: absolute;
+          top: 100%;
+          width: 100%;
+          z-index: 30;
+          max-height: 224px;
+          overflow-y: auto;
+          border-radius: 12px;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          background: #ffffff;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          animation: dropdown-enter 180ms ease-out;
+        }
+        .smart-search-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+        .smart-search-option {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+          text-align: left;
+          border: 0;
+          border-radius: 8px;
+          padding: 12px 16px;
+          background: transparent;
+          color: #111111;
+          font-weight: 400;
+          cursor: pointer;
+          transition: background-color 160ms ease, color 160ms ease;
+        }
+        .smart-search-option-icon {
+          width: 14px;
+          height: 14px;
+          color: #9ca3af;
+          opacity: 0.95;
+        }
+        .smart-search-option:hover,
+        .smart-search-option.active {
+          background: #f5f5f5;
+        }
+        .smart-search-option.active {
+          background: #eeeeee;
+        }
+        .smart-search-option.selected {
+          color: #111111;
+          font-weight: 500;
+        }
+        .smart-search-empty {
+          margin: 0;
+          padding: 0.65rem 0.7rem;
+          color: #666666;
+          font-size: 0.85rem;
+          font-weight: 400;
+        }
+        .search-highlight {
+          color: #111111;
+          font-weight: 600;
+        }
+        @keyframes dropdown-enter {
+          from {
+            opacity: 0;
+            transform: translateY(-6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @media (max-width: 640px) {
+          .smart-search-input {
+            padding: 0.92rem 1rem;
+          }
+          .smart-search-dropdown {
+            top: calc(100% + 0.35rem);
+          }
+        }
       `}</style>
     </div>
   )
+}
+
+function CountUpNumber({ end, suffix = '', start, durationMs = 1200 }) {
+  const [value, setValue] = useState(0)
+
+  useEffect(() => {
+    if (!start) return
+
+    let animationFrameId
+    const startAt = performance.now()
+
+    const animate = (now) => {
+      const progress = Math.min((now - startAt) / durationMs, 1)
+      // Ease-out for smooth finishing motion.
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setValue(Math.round(end * eased))
+
+      if (progress < 1) {
+        animationFrameId = window.requestAnimationFrame(animate)
+      }
+    }
+
+    animationFrameId = window.requestAnimationFrame(animate)
+    return () => window.cancelAnimationFrame(animationFrameId)
+  }, [durationMs, end, start])
+
+  return `${value.toLocaleString()}${suffix}`
 }

@@ -8,10 +8,12 @@ export const api = axios.create({
 export const normalizeProperty = (property) => {
   if (!property) return property
   const areaSqm = property.area != null ? property.area : property.areaSqm
+  const landAreaAcres = property.landAreaAcres
   return {
     ...property,
     id: property._id ?? property.id,
     areaSqm: areaSqm != null && areaSqm !== '' ? Number(areaSqm) : null,
+    landAreaAcres: landAreaAcres != null && landAreaAcres !== '' ? Number(landAreaAcres) : null,
     amenities: Array.isArray(property.amenities) ? property.amenities : [],
     nearbyLandmarks: Array.isArray(property.nearbyLandmarks) ? property.nearbyLandmarks : [],
     floorPlans: Array.isArray(property.floorPlans) ? property.floorPlans : [],

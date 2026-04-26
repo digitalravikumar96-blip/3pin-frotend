@@ -193,7 +193,7 @@ export function CashbackCalculatorPage() {
               <div className="mt-8">
                 <button
                   type="button"
-                  onClick={() => navigate('/contact')}
+                  onClick={() => navigate('/listings?cashbackEligible=1')}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                   className="luxury-button luxury-button-primary w-full py-4 text-sm font-semibold tracking-[0.08em]"

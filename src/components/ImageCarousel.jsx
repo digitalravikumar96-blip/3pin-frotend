@@ -1,7 +1,13 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { useMemo, useState } from 'react'
 
-export function ImageCarousel({ images = [], alt = 'Property image', cashbackEligible = false }) {
+export function ImageCarousel({
+  images = [],
+  alt = 'Property image',
+  cashbackEligible = false,
+  launchStatus = '',
+  onBookSiteVisit,
+}) {
   const safeImages = useMemo(() => (Array.isArray(images) ? images.filter(Boolean) : []), [images])
   const [index, setIndex] = useState(0)
 
@@ -31,12 +37,32 @@ export function ImageCarousel({ images = [], alt = 'Property image', cashbackEli
           className="absolute inset-0 h-full w-full object-cover"
         />
 
-        {/* Cashback Badge - Top Left */}
-        {cashbackEligible && (
-          <div className="absolute top-4 left-4 bg-[#2d7a4f]/95 px-3 py-1.5 rounded-md shadow-md">
-            <span className="font-sans text-xs font-medium text-white">Eligible for Cashback</span>
+        {/* Top-left badges */}
+        {(cashbackEligible || launchStatus) && (
+          <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+            {cashbackEligible ? (
+              <div className="bg-[#2d7a4f]/95 px-3 py-1.5 rounded-md shadow-md">
+                <span className="font-sans text-xs font-medium text-white">Eligible for Cashback</span>
+              </div>
+            ) : null}
+            {launchStatus ? (
+              <div className="rounded-full bg-[var(--color-primary)] px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.22)]">
+                <span className="font-sans text-xs font-semibold uppercase tracking-wider text-white">{launchStatus}</span>
+              </div>
+            ) : null}
           </div>
         )}
+
+        {typeof onBookSiteVisit === 'function' ? (
+          <button
+            type="button"
+            onClick={onBookSiteVisit}
+            className="absolute bottom-4 right-4 z-20 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2.5 text-sm font-medium text-white shadow-[0_10px_24px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-[var(--color-primary-dark)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+            aria-label="Book site visit"
+          >
+            <span>Book site visit</span>
+          </button>
+        ) : null}
 
         {safeImages.length > 1 ? (
           <>
