@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRightIcon, MapPinIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, ArrowRightIcon, MapPinIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { PropertyCard } from '../components/PropertyCard'
 import { api, normalizeProperty } from '../services/api'
 
@@ -169,6 +169,55 @@ function IntelligentSearch({
 export function HomePage() {
   const navigate = useNavigate()
   const [featured, setFeatured] = useState([])
+  const testimonials = [
+    {
+      text: "Handled a complex sale smoothly with constant follow-up and attention to detail.",
+      author: "Anita Aditya",
+    },
+    {
+      text: "Seamless process from property visits to paperwork. Always responsive and professional.",
+      author: "Mangalakrishnan Balasoundarapandian",
+    },
+    {
+      text: "Punctual, reliable, and true to his word. A smooth experience overall.",
+      author: "Prabhu R",
+    },
+  ]
+  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const [animating, setAnimating] = useState(false)
+  const [animDir, setAnimDir] = useState(null)
+
+  useEffect(() => {
+    if (isPaused) return
+    const interval = setInterval(() => {
+      setAnimDir('next')
+      setAnimating(true)
+      setTimeout(() => {
+        setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+        setAnimating(false)
+      }, 350)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [isPaused, testimonials.length])
+
+  const prevTestimonial = () => {
+    setAnimDir('prev')
+    setAnimating(true)
+    setTimeout(() => {
+      setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+      setAnimating(false)
+    }, 350)
+  }
+
+  const nextTestimonial = () => {
+    setAnimDir('next')
+    setAnimating(true)
+    setTimeout(() => {
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+      setAnimating(false)
+    }, 350)
+  }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isVisible, setIsVisible] = useState(false)
@@ -461,30 +510,158 @@ export function HomePage() {
               </div>
             </div>
 
-            <div className="relative">
-              <div className="aspect-[4/5] overflow-hidden rounded-sm bg-[var(--color-neutral-200)]">
+            <div className="relative h-full">
+              <div className="relative aspect-[4/5] overflow-visible rounded-sm">
                 <img
                   src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80"
                   alt="Luxury Interior"
-                  className="block w-full h-full object-cover"
+                  className="block w-full h-full object-cover rounded-sm"
                 />
               </div>
 
-              {/* Floating testimonial card */}
-              <div className="absolute -bottom-8 -left-8 why-section__testimonial p-6 sm:p-8 shadow-xl max-w-xs hidden sm:block">
-                <div className="w-8 h-8 bg-[var(--color-accent)]/10 flex items-center justify-center rounded-sm mb-4">
-                  <span className="font-serif text-2xl text-[var(--color-accent)]">&ldquo;</span>
+              {/* Floating testimonial carousel */}
+              <div
+                className="absolute -bottom-10 -left-12 why-section__testimonial p-8 shadow-2xl max-w-[17rem] hidden lg:block z-10"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+              >
+                {/* Arrows */}
+                <button
+                  type="button"
+                  onClick={prevTestimonial}
+                  className="testimonial-arrow testimonial-arrow-prev"
+                  aria-label="Previous testimonial"
+                >
+                  <ChevronLeftIcon className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={nextTestimonial}
+                  className="testimonial-arrow testimonial-arrow-next"
+                  aria-label="Next testimonial"
+                >
+                  <ChevronRightIcon className="w-4 h-4" />
+                </button>
+
+                {/* Quote icon */}
+                <div className="w-7 h-7 bg-[var(--color-accent)]/10 flex items-center justify-center rounded-sm mb-5">
+                  <span className="font-serif text-xl text-[var(--color-accent)]">&ldquo;</span>
                 </div>
-                <p className="font-serif text-lg text-[var(--color-primary)] italic leading-relaxed mb-4">
-                  Exceptional service from start to finish.
+
+                {/* Testimonial text */}
+                <p
+                  className={`font-serif text-base text-[var(--color-primary)] italic leading-relaxed mb-5 transition-all duration-300 ${
+                    animating
+                      ? `opacity-0 ${animDir === 'next' ? '-translate-x-4' : 'translate-x-4'}`
+                      : 'opacity-100 translate-x-0'
+                  }`}
+                >
+                  {testimonials[currentTestimonial].text}
                 </p>
-                <p className="font-sans text-xs text-[var(--color-neutral-500)] uppercase tracking-wider">
-                  — Satisfied Client
+
+                {/* Author */}
+                <p
+                  className={`font-sans text-[10px] text-[var(--color-neutral-500)] uppercase tracking-[0.18em] mb-8 transition-all duration-300 delay-75 ${
+                    animating ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  — {testimonials[currentTestimonial].author}
                 </p>
+
+                {/* Dots */}
+                <div className="flex items-center justify-center gap-2">
+                  {testimonials.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setAnimDir(i > currentTestimonial ? 'next' : 'prev')
+                        setAnimating(true)
+                        setTimeout(() => {
+                          setCurrentTestimonial(i)
+                          setAnimating(false)
+                        }, 300)
+                      }}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === currentTestimonial
+                          ? 'w-4 h-1.5 bg-[var(--color-accent)]'
+                          : 'w-1.5 h-1.5 bg-[var(--color-neutral-300)] hover:bg-[var(--color-neutral-400)]'
+                      }`}
+                      aria-label={`Go to testimonial ${i + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Decorative frame */}
               <div className="absolute -top-4 -right-4 w-full h-full border border-[var(--color-accent)]/30 -z-10 rounded-sm" />
+
+              {/* Floating testimonial — mobile (below image) */}
+              <div
+                className="lg:hidden mt-6 p-5 bg-white rounded-sm shadow-lg"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+              >
+                <div className="w-6 h-6 bg-[var(--color-accent)]/10 flex items-center justify-center rounded-sm mb-3">
+                  <span className="font-serif text-lg text-[var(--color-accent)]">&ldquo;</span>
+                </div>
+                <p
+                  className={`font-serif text-sm text-[var(--color-primary)] italic leading-relaxed mb-3 transition-all duration-300 ${
+                    animating
+                      ? `opacity-0 ${animDir === 'next' ? '-translate-x-4' : 'translate-x-4'}`
+                      : 'opacity-100 translate-x-0'
+                  }`}
+                >
+                  {testimonials[currentTestimonial].text}
+                </p>
+                <p
+                  className={`font-sans text-[9px] text-[var(--color-neutral-500)] uppercase tracking-[0.18em] mb-4 transition-all duration-300 delay-75 ${
+                    animating ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  — {testimonials[currentTestimonial].author}
+                </p>
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={prevTestimonial}
+                    className="w-6 h-6 rounded-full border border-[var(--color-neutral-200)] flex items-center justify-center text-[var(--color-neutral-400)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors"
+                    aria-label="Previous testimonial"
+                  >
+                    <ChevronLeftIcon className="w-3 h-3" />
+                  </button>
+                  <div className="flex items-center justify-center gap-1.5 mx-2">
+                    {testimonials.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setAnimDir(i > currentTestimonial ? 'next' : 'prev')
+                          setAnimating(true)
+                          setTimeout(() => {
+                            setCurrentTestimonial(i)
+                            setAnimating(false)
+                          }, 300)
+                        }}
+                        className={`rounded-full transition-all duration-300 ${
+                          i === currentTestimonial
+                            ? 'w-4 h-1.5 bg-[var(--color-accent)]'
+                            : 'w-1.5 h-1.5 bg-[var(--color-neutral-300)]'
+                        }`}
+                        aria-label={`Go to testimonial ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={nextTestimonial}
+                    className="w-6 h-6 rounded-full border border-[var(--color-neutral-200)] flex items-center justify-center text-[var(--color-neutral-400)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors"
+                    aria-label="Next testimonial"
+                  >
+                    <ChevronRightIcon className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -649,6 +826,44 @@ export function HomePage() {
           }
           .smart-search-dropdown {
             top: calc(100% + 0.35rem);
+          }
+        }
+        /* Testimonial carousel */
+        .why-section__testimonial {
+          background: #ffffff;
+          border-radius: 4px;
+          backdrop-filter: blur(4px);
+        }
+        .testimonial-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          color: var(--color-neutral-400);
+          background: transparent;
+          opacity: 0.45;
+          transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
+          z-index: 2;
+        }
+        .testimonial-arrow:hover {
+          opacity: 1;
+          transform: translateY(-50%) scale(1.1);
+          color: var(--color-accent);
+        }
+        .testimonial-arrow-prev {
+          left: -42px;
+        }
+        .testimonial-arrow-next {
+          right: -42px;
+        }
+        @media (max-width: 900px) {
+          .testimonial-arrow {
+            display: none;
           }
         }
       `}</style>
