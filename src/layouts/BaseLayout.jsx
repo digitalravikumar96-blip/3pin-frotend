@@ -64,6 +64,11 @@ export function BaseLayout() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [location.pathname])
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-secondary)]">
       {/* Navigation - Light Minimal */}

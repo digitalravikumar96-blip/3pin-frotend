@@ -1,13 +1,36 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { FunnelIcon, ArrowDownIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { FilterSidebar } from '../components/FilterSidebar'
 import { PropertyCard } from '../components/PropertyCard'
 import { api, normalizeProperty } from '../services/api'
-import { parsePriceToNumber } from '../data/properties'
 
 function includes(haystack, needle) {
   return String(haystack || '').toLowerCase().includes(String(needle || '').toLowerCase())
+}
+
+function buildQueryParams(filters) {
+  const params = new URLSearchParams()
+
+  if (filters.location) params.set('location', filters.location)
+  if (filters.minBudget != null && filters.minBudget !== '') params.set('minBudget', String(filters.minBudget))
+  if (filters.maxBudget != null && filters.maxBudget !== '') params.set('maxBudget', String(filters.maxBudget))
+  if (filters.propertyType) params.set('type', filters.propertyType)
+  if (filters.status?.length) params.set('status', filters.status.join(','))
+  if (filters.bedrooms?.length) params.set('bedrooms', filters.bedrooms.join(','))
+  if (filters.completionYear?.length) params.set('completionYear', filters.completionYear.map(String).join(','))
+
+  return params
+}
+
+const DEFAULT_FILTERS = {
+  location: '',
+  minBudget: null,
+  maxBudget: null,
+  propertyType: '',
+  status: [],
+  bedrooms: [],
+  completionYear: [],
 }
 
 function UnifiedListingSearch({ value, suggestions, onSearch }) {
@@ -161,25 +184,43 @@ export function ListingsPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [properties, setProperties] = useState([])
+  const [loading, setLoading] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-
-  useEffect(() => {
-    api.get('/api/property')
-      .then(res => setProperties((res.data?.data || []).map(normalizeProperty)))
-      .catch(() => setProperties([]))
-  }, [])
+  const debounceTimer = useRef(null)
 
   const q = params.get('q') || ''
   const loc = params.get('loc') || ''
-  const cashbackOnly = params.get('cashbackEligible') === '1'
 
-  const [filters, setFilters] = useState({
-    location: '',
-    budget: 0,
-    type: '',
-    cashbackEligible: cashbackOnly,
-  })
-  const [sortBy, setSortBy] = useState('price')
+  const [filters, setFilters] = useState(DEFAULT_FILTERS)
+
+  const fetchProperties = (f) => {
+    setLoading(true)
+    const qs = buildQueryParams(f)
+    api.get(`/api/property?${qs}`)
+      .then((res) => setProperties((res.data?.data || []).map(normalizeProperty)))
+      .catch(() => setProperties([]))
+      .finally(() => setLoading(false))
+  }
+
+  const handleFilterChange = (next) => {
+    setFilters(next)
+  }
+
+  const handleApplyFilters = () => {
+    setShowFilters(false)
+    clearTimeout(debounceTimer.current)
+    debounceTimer.current = setTimeout(() => fetchProperties(filters), 400)
+  }
+
+  const handleReset = () => {
+    setFilters(DEFAULT_FILTERS)
+    fetchProperties(DEFAULT_FILTERS)
+  }
+
+  useEffect(() => {
+    fetchProperties(filters)
+  }, [])
+
   const unifiedQuery = q || loc
 
   const searchSuggestions = useMemo(() => {
@@ -194,43 +235,20 @@ export function ListingsPage() {
   }, [properties])
 
   const results = useMemo(() => {
-    const filtered = properties.filter((p) => {
-      if (q && !(includes(p.title, q) || includes(p.type, q) || includes(p.description, q) || includes(p.location, q)))
-        return false
-      if (loc && !includes(p.location, loc)) return false
-      if (filters.location && !includes(p.location, filters.location)) return false
-      if (filters.type && p.type !== filters.type) return false
-      if (filters.cashbackEligible && !p.cashbackEligible) return false
-      if (filters.budget) {
-        const priceNum = parsePriceToNumber(p.price)
-        if (priceNum != null && priceNum > filters.budget) return false
-      }
-      return true
-    })
-
-    return [...filtered].sort((a, b) => {
-      if (sortBy === 'newest') {
-        const aDate = new Date(a.createdAt || 0).getTime()
-        const bDate = new Date(b.createdAt || 0).getTime()
-        return bDate - aDate
-      }
-      if (sortBy === 'delivery') {
-        const aDate = a.deliveryDate ? new Date(a.deliveryDate).getTime() : Infinity
-        const bDate = b.deliveryDate ? new Date(b.deliveryDate).getTime() : Infinity
-        return aDate - bDate
-      }
-      const aPrice = parsePriceToNumber(a.price)
-      const bPrice = parsePriceToNumber(b.price)
-      if (aPrice == null && bPrice == null) return 0
-      if (aPrice == null) return 1
-      if (bPrice == null) return -1
-      return aPrice - bPrice
-    })
-  }, [q, loc, filters, sortBy, properties])
+    if (q || loc) {
+      return properties.filter((p) => {
+        if (q && !(includes(p.title, q) || includes(p.type, q) || includes(p.description, q) || includes(p.location, q)))
+          return false
+        if (loc && !includes(p.location, loc)) return false
+        return true
+      })
+    }
+    return properties
+  }, [q, loc, properties])
 
   return (
     <div className="min-h-screen bg-[var(--color-secondary)]">
-      {/* Page Header - Light Elegance */}
+      {/* Page Header */}
       <div className="bg-[var(--color-secondary-200)] py-16 sm:py-20 border-b border-[var(--color-neutral-200)]">
         <div className="luxury-container">
           <div className="max-w-2xl">
@@ -280,20 +298,10 @@ export function ListingsPage() {
                 >
                   <FunnelIcon className="w-4 h-4 mr-1.5" />
                   Filters
+                  {loading && (
+                    <span className="ml-1.5 w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  )}
                 </button>
-
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="luxury-input properties-section__sort text-xs py-2.5 pr-10 cursor-pointer appearance-none min-w-[160px]"
-                  >
-                    <option value="price">Price: Low to High</option>
-                    <option value="newest">Newest First</option>
-                    <option value="delivery">Completion Date</option>
-                  </select>
-                  <ArrowDownIcon className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-neutral-400)] pointer-events-none" />
-                </div>
 
                 <span className="font-sans text-xs text-[var(--color-neutral-500)]">
                   {results.length} properties
@@ -305,24 +313,58 @@ export function ListingsPage() {
 
         <div className="luxury-container py-10">
           <div className="flex gap-8">
-            {/* Sidebar Filters */}
+            {/* Desktop Sidebar */}
+            <aside className="w-72 flex-shrink-0 hidden lg:block">
+              <div className="properties-section__sidebar p-6 sticky top-28">
+                <h3 className="font-serif text-lg text-[var(--color-primary)] mb-6">Filters</h3>
+                <FilterSidebar
+                  filters={filters}
+                  onChange={handleFilterChange}
+                  onApply={handleApplyFilters}
+                  onReset={handleReset}
+                  loading={loading}
+                />
+              </div>
+            </aside>
+
+            {/* Mobile Drawer */}
             {showFilters && (
-              <aside className="w-72 flex-shrink-0 hidden lg:block">
-                <div className="properties-section__sidebar p-6 sticky top-28">
-                  <h3 className="font-serif text-lg text-[var(--color-primary)] mb-6">Filters</h3>
-                  <FilterSidebar
-                    filters={filters}
-                    onChange={(next) => {
-                      setFilters(next)
-                    }}
-                  />
+              <>
+                <div
+                  className="mobile-filter-backdrop"
+                  onClick={() => setShowFilters(false)}
+                />
+                <div className={`mobile-filter-drawer${showFilters ? ' open' : ''}`}>
+                  <div className="mobile-filter-drawer__header">
+                    <h3 className="font-serif text-lg text-[var(--color-primary)]">Filters</h3>
+                    <button
+                      onClick={() => setShowFilters(false)}
+                      className="p-1.5 rounded-md hover:bg-[var(--color-neutral-100)] transition-colors"
+                      aria-label="Close filters"
+                    >
+                      <XMarkIcon className="w-5 h-5 text-[var(--color-primary)]" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <FilterSidebar
+                      filters={filters}
+                      onChange={handleFilterChange}
+                      onApply={handleApplyFilters}
+                      onReset={handleReset}
+                      loading={loading}
+                    />
+                  </div>
                 </div>
-              </aside>
+              </>
             )}
 
             {/* Property Grid */}
             <div className={`flex-1 ${showFilters ? '' : 'w-full'}`}>
-              {results.length === 0 ? (
+              {loading && results.length === 0 ? (
+                <div className="flex items-center justify-center py-24">
+                  <div className="w-8 h-8 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : results.length === 0 ? (
                 <div className="text-center py-24 bg-white rounded-md border border-[var(--color-neutral-200)]">
                   <div className="w-16 h-px bg-[var(--color-accent)] mx-auto mb-6" />
                   <h3 className="font-serif text-xl text-[var(--color-primary)] mb-2">No properties found</h3>
@@ -331,7 +373,7 @@ export function ListingsPage() {
                   </p>
                   <button
                     onClick={() => {
-                      setFilters({ location: '', budget: 0, type: '', cashbackEligible: false })
+                      handleReset()
                       setParams(new URLSearchParams())
                     }}
                     className="luxury-button luxury-button-secondary properties-section__filter-button"
@@ -460,6 +502,47 @@ export function ListingsPage() {
             right: 0;
             max-width: 100%;
           }
+        }
+
+        /* Mobile filter drawer */
+        .mobile-filter-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.4);
+          z-index: 9998;
+        }
+
+        .mobile-filter-drawer {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: min(85vw, 360px);
+          height: 100%;
+          background: #ffffff;
+          z-index: 9999;
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow-y: auto;
+          box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+          transform: translateX(100%);
+        }
+
+        .mobile-filter-drawer.open {
+          transform: translateX(0);
+        }
+
+        .mobile-filter-drawer__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid var(--color-neutral-200, #e5e7eb);
+          position: sticky;
+          top: 0;
+          background: #ffffff;
+          z-index: 1;
         }
       `}</style>
     </div>
