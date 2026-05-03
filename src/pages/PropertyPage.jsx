@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeftIcon,
   MapPinIcon,
+  BuildingOffice2Icon,
+  AcademicCapIcon,
+  HeartIcon,
+  TruckIcon,
   PhoneIcon,
   PlayIcon,
   DocumentArrowDownIcon,
@@ -387,51 +391,80 @@ export function PropertyPage() {
               </section>
             ) : null}
 
-            {property.nearbyLandmarks?.length > 0 ? (
-              <section className="property-page-section__panel p-6 sm:p-8">
-                <h2 className="font-serif text-xl text-[var(--color-primary)] mb-4 card-title-rule">Nearby landmarks</h2>
-                <ul className="divide-y divide-[var(--color-neutral-200)]">
-                  {property.nearbyLandmarks.map((lm) => (
-                    <li key={lm.name + (lm.distance || '')} className="flex items-center gap-3 py-3 first:pt-0">
-                      <span
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border"
-                        style={{
-                          background: 'var(--color-secondary-200)',
-                          borderColor: 'var(--color-neutral-200)',
-                        }}
-                      >
-                        <MapPinIcon className="h-4 w-4 text-[var(--color-accent)]" />
-                      </span>
-                      <span className="font-sans text-sm text-[var(--color-primary)] flex-1">{lm.name}</span>
-                      {lm.distance ? (
-                        <span className="font-sans text-xs font-semibold text-[var(--color-neutral-500)] whitespace-nowrap">
-                          {lm.distance}
+            {property.nearbyLandmarks?.length > 0 || mapIframeSrc ? (
+              <section
+                id="property-map"
+                className="rounded-[var(--radius-md)] border border-[var(--color-neutral-200)] bg-[var(--color-secondary-200)] p-4 sm:p-5 lg:p-6"
+              >
+                <div className="mb-4 sm:mb-5">
+                  <h2 className="font-serif text-[22px] leading-tight text-[var(--color-primary)]">Prime Location Highlights</h2>
+                  <p className="mt-1 font-sans text-sm text-[var(--color-neutral-500)]">
+                    Close to key transit, schools, and daily essentials
+                  </p>
+                </div>
+
+                <div className="flex flex-col lg:flex-row lg:items-start gap-5">
+                  {property.nearbyLandmarks?.length > 0 ? (
+                    <div className="lg:basis-[40%] lg:max-w-[40%] min-w-0">
+                      <ul className="flex flex-col gap-2 rounded-xl border border-[var(--color-neutral-200)] bg-white p-2">
+                        {property.nearbyLandmarks.slice(0, 6).map((lm, idx) => {
+                          const iconSet = [TruckIcon, AcademicCapIcon, HeartIcon, BuildingOffice2Icon]
+                          const LandmarkIcon = iconSet[idx % iconSet.length]
+                          return (
+                            <li
+                              key={lm.name + (lm.distance || '')}
+                              className="group flex items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-[var(--color-secondary-200)]"
+                            >
+                              <span
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border"
+                                style={{
+                                  background: 'var(--color-secondary-200)',
+                                  borderColor: 'var(--color-neutral-200)',
+                                }}
+                              >
+                                <LandmarkIcon className="h-4.5 w-4.5 text-[var(--color-accent)]" />
+                              </span>
+                              <span className="font-sans text-[13px] text-[var(--color-primary)] leading-snug flex-1">{lm.name}</span>
+                              <span className="font-sans text-xs font-semibold text-[var(--color-neutral-500)] whitespace-nowrap">
+                                {lm.distance || 'Nearby'}
+                              </span>
+                            </li>
+                          )
+                        })}
+                      </ul>
+
+                      <div className="mt-3 inline-flex items-center rounded-full border border-[var(--color-neutral-200)] bg-white px-3 py-1.5">
+                        <span className="font-sans text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">
+                          Prime Location
                         </span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="lg:basis-[60%] lg:max-w-[60%] flex-1 min-w-0">
+                    <div className="relative isolate overflow-hidden rounded-xl border border-[var(--color-neutral-200)] bg-white">
+                      <div className="h-[240px] sm:h-[260px] bg-[var(--color-secondary-200)]">
+                        {mapIframeSrc ? (
+                          <iframe title="Property location" src={mapIframeSrc} className="h-full w-full border-0" loading="lazy" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center p-6">
+                            <p className="font-sans text-sm text-[var(--color-neutral-500)]">Map coming soon</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/60 via-black/35 to-transparent px-4 py-3">
+                        <div className="text-white">
+                          <div className="min-w-0">
+                            <div className="truncate font-sans text-sm font-semibold">{property.title}</div>
+                            <div className="truncate font-sans text-xs text-white/85">{property.addressLine || property.location}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </section>
             ) : null}
-
-            <section id="property-map" className="property-page-section__panel overflow-hidden p-0">
-              <div className="aspect-[4/3] bg-[var(--color-secondary-200)]">
-                {mapIframeSrc ? (
-                  <iframe title="Property location" src={mapIframeSrc} className="h-full w-full border-0" loading="lazy" />
-                ) : (
-                  <div className="flex h-full items-center justify-center p-6">
-                    <p className="font-sans text-sm text-[var(--color-neutral-500)]">Map coming soon</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-2 border-t border-[var(--color-neutral-200)] bg-white px-4 py-3 text-sm text-[var(--color-neutral-500)]">
-                <MapPinIcon className="h-5 w-5 shrink-0 text-[var(--color-accent)]" />
-                <div>
-                  <span className="font-semibold text-[var(--color-primary)]">{property.title}</span>
-                  {property.addressLine ? <div className="mt-0.5 text-xs leading-relaxed">{property.addressLine}</div> : null}
-                </div>
-              </div>
-            </section>
 
             {ytId ? (
               <section className="property-page-section__panel p-6 sm:p-8">
