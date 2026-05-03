@@ -55,6 +55,7 @@ function NavItem({ to, children, mobile = false }) {
 export function BaseLayout() {
   const location = useLocation()
   const isHomePage = location.pathname === '/'
+  const hideFloatingActions = location.pathname === '/privacy-policy'
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -238,19 +239,21 @@ export function BaseLayout() {
                 <NavLink to="/contact" className="footer-link text-xs text-[var(--color-neutral-400)] hover:text-[var(--color-accent)] transition-colors duration-200">
                   Contact
                 </NavLink>
-                <a href="#" className="footer-link text-xs text-[var(--color-neutral-400)] hover:text-[var(--color-accent)] transition-colors duration-200">
+                <NavLink to="/privacy-policy" className="footer-link text-xs text-[var(--color-neutral-400)] hover:text-[var(--color-accent)] transition-colors duration-200">
                   Privacy Policy
-                </a>
+                </NavLink>
               </div>
             </div>
           </div>
         </div>
       </footer>
 
-      <WhatsAppButton
-        phone="+919080895163"
-        message="I am interested in a property. Please share more details."
-      />
+      {!hideFloatingActions && (
+        <WhatsAppButton
+          phone="+919080895163"
+          message="I am interested in a property. Please share more details."
+        />
+      )}
     </div>
   )
 }

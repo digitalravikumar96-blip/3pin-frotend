@@ -496,7 +496,7 @@ export function PropertyPage() {
               </div>
             </div>
 
-            {ytId ? (
+            {/* {ytId ? (
               <a
                 href={property.youtubeUrl}
                 target="_blank"
@@ -514,7 +514,7 @@ export function PropertyPage() {
                   Watch the full tour on YouTube — interiors, amenities &amp; location.
                 </p>
               </a>
-            ) : null}
+            ) : null} */}
 
             {/* <div id="property-inquiry" className="property-page-section__panel p-6 scroll-mt-28">
               <h3 className="font-serif text-lg text-[var(--color-primary)] mb-1">Send a message</h3>

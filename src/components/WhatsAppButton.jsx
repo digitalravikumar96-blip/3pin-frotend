@@ -14,14 +14,14 @@ export function WhatsAppButton({
     window.location.href = callHref
   }
 
-  const position = floating ? 'fixed bottom-5 right-5 z-50' : 'relative w-full justify-center'
+  const position = floating ? 'fixed bottom-7 right-5 z-50' : 'relative w-full justify-center'
   const wrapper = [position, className].filter(Boolean).join(' ')
   const iconButtonBase =
     'group inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(15,23,42,0.22)] ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(15,23,42,0.28)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
 
   return (
     <div className={wrapper} aria-label="Quick actions">
-      <div className="flex flex-col items-end gap-3">
+      <div className="flex flex-col md:flex-row items-end md:items-center gap-3">
         <a
           href={callHref}
           onClick={handleCallNow}

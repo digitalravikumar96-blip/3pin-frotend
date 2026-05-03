@@ -11,6 +11,7 @@ import { AdminPropertyFormPage } from './pages/AdminPropertyFormPage'
 import { ArticlesPage } from './pages/ArticlesPage'
 import { ContactPage } from './pages/ContactPage'
 import { CashbackCalculatorPage } from './pages/CashbackCalculatorPage'
+import { PrivacyPolicy } from './pages/PrivacyPolicy'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export const router = createBrowserRouter([
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: '/articles', element: <ArticlesPage /> },
       { path: '/contact', element: <ContactPage /> },
       { path: '/cashback', element: <CashbackCalculatorPage /> },
+      { path: '/privacy-policy', element: <PrivacyPolicy /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
