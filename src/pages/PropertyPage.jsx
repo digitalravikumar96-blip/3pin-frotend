@@ -483,7 +483,18 @@ export function PropertyPage() {
           </div>
 
           <aside className="lg:sticky lg:top-24 space-y-6">
-            <div className="property-page-section__panel p-6">
+            <div
+              className="bg-white rounded-xl p-5 border border-gray-200 transition-all duration-300 relative hover:-translate-y-1"
+              style={{
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.08)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05)'
+              }}
+            >
               <h3 className="font-serif text-lg text-[var(--color-primary)] mb-1">Downloads &amp; actions</h3>
               <div className="flex flex-col gap-3 mt-4">
                 {property.brochureUrl && isHttpUrl(property.brochureUrl) ? (
